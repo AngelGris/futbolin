@@ -1,7 +1,7 @@
 # Futbolin (under development)
-## Soccer matches simmulator in Python 3
+## Soccer matches simulator in Python 3
 
-The Futbolin soccer matches simmulator takes 2 teams and simmulates a match between them showing the most important plays in text form.
+The Futbolin soccer matches simulator takes 2 teams and simmulates a match between them showing the most important plays in text form.
 
 The teams information is hardcoded but in the future will be loaded from a DB.
 
