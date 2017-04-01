@@ -18,16 +18,16 @@ class Player:
         self._pos_att = pos_att.copy()
         self._pos_cur = pos_def.copy()
         self._hasBall = False
-        self._defending = 80
-        self._dribbling = 80
-        self._goalkeeping = 80
-        self._heading = 80
-        self._jumping = 80
-        self._passing = 80
-        self._precision = 80
-        self._speed = 80
-        self._strength = 80
-        self._tackling = 80
+        self._defending = 80 # Chances to intercept a pass
+        self._dribbling = 80 # Ability to avoid a rival
+        self._goalkeeping = 80 # Ability while goalkeeping
+        self._heading = 80 # Heading on goal ability
+        self._jumping = 80 # Ability to jump looking to head the ball
+        self._passing = 80 # Ability to make good passes
+        self._precision = 80 # Precision when shooting on goal
+        self._speed = 80 # Speed
+        self._strength = 80 # Strength to shoot on goal from far
+        self._tackling = 80 # Chances to get the ball when tackling
 
     def __str__(self):
         return '%d - %s: %f, %f' % (self._number, self._name, self._pos_cur[0], self._pos_cur[1])
