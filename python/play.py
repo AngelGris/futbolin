@@ -6,8 +6,39 @@ import math
 import classes.team as team
 import classes.ball as bal
 import classes.stats as stats
+import classes.mysql as mysql
+import sys
 from classes.field import Field
 from classes.helper import Helper
+
+# Arguments list:
+# 0 = script name
+# 1 = home team ID
+# 2 = visit team ID
+# 3 = debug level
+
+if len(sys.argv) < 3:
+    print('Missing arguments (Home team ID, Visit team ID, Debug level)')
+    exit()
+
+args = []
+for i in range(3):
+    try:
+        args.append(int(sys.argv[i + 1]))
+    except ValueError:
+        if (i == 0):
+            print('Home team ID must be an integer')
+        elif (i == 1):
+            print('Visit team ID must be an integer')
+        elif (i == 2):
+            print('Debug level must be an integer')
+        exit()
+    except:
+        print("Unexpected error:", sys.exc_info()[0])
+        raise
+
+# DB connection
+db_connection = mysql.Mysql()
 
 games_count = 0
 games_closed = 0
@@ -16,7 +47,7 @@ results = [0, 0, 0]
 time_step = 2.0
 ball = bal.Ball([45.0, 60.0])
 field_size = Field.getSize()
-teams = [team.Team('T1', field_size), team.Team('T2', field_size)]
+teams = [team.Team(args[0], field_size, db_connection), team.Team(args[1], field_size, db_connection)]
 
 for i in range(1):
 #while True:
@@ -24,7 +55,7 @@ for i in range(1):
     time_total = 2700
     time_half = 1
     play_type = 1
-    statistics = stats.Stats(2)
+    statistics = stats.Stats(args[2])
 
     print('*** COMIENZA EL PARTIDO ***')
     kickoff_team = random.randint(0,1)
@@ -85,10 +116,10 @@ for i in range(1):
                     probs[1] = 0
                 elif closest_rival[1] > closest_rival[2]:
                     # Rival closer
-                    probs[1] = int(teams[possesion_team].getPlayer(possesion_player).getDefending() * 0.5)
+                    probs[1] = int(teams[rival_team].getPlayer(closest_rival[0]).getDefending() * 0.5)
                 else:
                     # Rival is here
-                    probs[1] = teams[possesion_team].getPlayer(possesion_player).getDefending()
+                    probs[1] = teams[rival_team].getPlayer(closest_rival[0]).getDefending()
 
                 total = probs[0] + probs[1]
                 probs[0] = int(probs[0] * 100 / total)

@@ -51,7 +51,7 @@ class Stats:
         self._printAction(0, str(player) + ' rechaza de cabeza')
 
     def execDribbling(self, team, player1, player2):
-        self._printAction(0, str(player1) + ' escapa de la marca de ' + str(player2))
+        self._printAction(2, str(player1) + ' escapa de la marca de ' + str(player2))
 
     def execFoul(self, team, player1, player2):
         self._printAction(1, str(player2) + ' le hace falta a ' + str(player1))
@@ -65,7 +65,7 @@ class Stats:
 
     def execGoalkeeperCutsCrossing(self, team, player):
         self._setPossesion(team)
-        self._printAction(0, str(player) + ' sale y corta el centro')
+        self._printAction(1, str(player) + ' sale y corta el centro')
 
     def execGoalkeeperDefence(self, team, player):
         self._setPossesion(team)
@@ -83,7 +83,7 @@ class Stats:
 
     def execKickoff(self, team, player1, player2):
         self._setPossesion(team)
-        self._printAction(0, str(player1) + ' saca del medio para ' + str(player2))
+        self._printAction(1, str(player1) + ' saca del medio para ' + str(player2))
 
     def execPassing(self, player1, player2):
         self._printAction(2, str(player1) + ' pasa la pelota a ' + str(player2))
@@ -103,7 +103,7 @@ class Stats:
 
     def execTackling(self, team, player1, player2):
         self._setPossesion(team)
-        self._printAction(0, str(player2) + ' le quita la pelota a ' + str(player1))
+        self._printAction(2, str(player2) + ' le quita la pelota a ' + str(player1))
 
     def formatTime(time):
         return "%02d:%02d" % (int(time / 60), int(time % 60))

@@ -3,64 +3,38 @@
 import classes.player as player
 import random
 import math
+import json
 from classes.helper import Helper
 
 class Team:
+    _db_connection = None
     count = 0
-    formation_4_4_2 = [
-        [[45.0, 0.5], [45.0, 25.0]],
-        [[35.0, 10.5], [35.0, 45.0]],
-        [[15.0, 25.0], [15.0, 55.0]],
-        [[75.0, 25.0], [75.0, 55.0]],
-        [[35.0, 35.0], [35.0, 75.0]],
-        [[55.0, 10.5], [55.0, 45.0]],
-        [[15.0, 45.0], [15.0, 95.0]],
-        [[75.0, 45.0], [75.0, 95.0]],
-        [[35.0, 55.0], [35.0, 105.0]],
-        [[55.0, 35.0], [55.0, 75.0]],
-        [[55.0, 55.0], [55.0, 105.0]]
-    ]
-    formation_3_4_3 = [
-        [[45.0, 0.5], [45.0, 25.0]],
-        [[45.0, 10.0], [45.0, 55.0]],
-        [[25.0, 15.0], [15.0, 55.0]],
-        [[65.0, 15.0], [75.0, 55.0]],
-        [[35.0, 35.0], [35.0, 75.0]],
-        [[55.0, 35.0], [55.0, 75.0]],
-        [[15.0, 35.0], [15.0, 85.0]],
-        [[75.0, 35.0], [75.0, 85.0]],
-        [[25.0, 55.0], [35.0, 105.0]],
-        [[45.0, 55.0], [45.0, 100.0]],
-        [[65.0, 55.0], [55.0, 105.0]]
-    ]
-    formation_5_4_1 = [
-        [[45.0, 0.5], [45.0, 25.0]],
-        [[45.0, 10.0], [45.0, 55.0]],
-        [[30.0, 10.0], [20.0, 55.0]],
-        [[60.0, 10.0], [70.0, 55.0]],
-        [[15.0, 15.0], [15.0, 65.0]],
-        [[75.0, 15.0], [75.0, 65.0]],
-        [[15.0, 40.0], [15.0, 85.0]],
-        [[75.0, 40.0], [75.0, 85.0]],
-        [[45.0, 55.0], [45.0, 105.0]],
-        [[35.0, 35.0], [35.0, 85.0]],
-        [[55.0, 35.0], [55.0, 85.0]]
-    ]
 
-    def __init__(self, name, field):
+    def __init__(self, id, field, db_connection):
+        self._db_connection = db_connection
+        result = self._db_connection.query("SELECT `teams`.`name`, `teams`.`short_name`, `teams`.`formation`, `strategies`.`j01_start_x`, `strategies`.`j01_start_y`, `strategies`.`j01_end_x`, `strategies`.`j01_end_y`, `strategies`.`j02_start_x`, `strategies`.`j02_start_y`, `strategies`.`j02_end_x`, `strategies`.`j02_end_y`, `strategies`.`j03_start_x`, `strategies`.`j03_start_y`, `strategies`.`j03_end_x`, `strategies`.`j03_end_y`, `strategies`.`j04_start_x`, `strategies`.`j04_start_y`, `strategies`.`j04_end_x`, `strategies`.`j04_end_y`, `strategies`.`j05_start_x`, `strategies`.`j05_start_y`, `strategies`.`j05_end_x`, `strategies`.`j05_end_y`, `strategies`.`j06_start_x`, `strategies`.`j06_start_y`, `strategies`.`j06_end_x`, `strategies`.`j06_end_y`, `strategies`.`j07_start_x`, `strategies`.`j07_start_y`, `strategies`.`j07_end_x`, `strategies`.`j07_end_y`, `strategies`.`j08_start_x`, `strategies`.`j08_start_y`, `strategies`.`j08_end_x`, `strategies`.`j08_end_y`, `strategies`.`j09_start_x`, `strategies`.`j09_start_y`, `strategies`.`j09_end_x`, `strategies`.`j09_end_y`, `strategies`.`j10_start_x`, `strategies`.`j10_start_y`, `strategies`.`j10_end_x`, `strategies`.`j10_end_y`, `strategies`.`j11_start_x`, `strategies`.`j11_start_y`, `strategies`.`j11_end_x`, `strategies`.`j11_end_y` FROM `teams` INNER JOIN `strategies` ON `strategies`.`id` = `teams`.`strategy_id` WHERE `teams`.`id` = " + str(id) + " LIMIT 1", 1)
+
         self._index = Team.count
-        self._name = name
+        self._name = result['name']
+        self._short_name = result['short_name']
         self._players = []
-        for x in range(11):
-            position = Team.formation_3_4_3[x]
-            if self._index == 1:
-                position = Team.formation_4_4_2[x]
-                position[0][0] = field[0] - position[0][0]
-                position[0][1] = field[1] - position[0][1]
-                position[1][0] = field[0] - position[1][0]
-                position[1][1] = field[1] - position[1][1]
+        formation = json.loads(result['formation'])[0:11]
+        count = 0
+        for pid in formation:
+            position = [[], []]
+            if self._index == 0:
+                position[0].append(result["j%02d_start_x" % (count + 1)])
+                position[0].append(result["j%02d_start_y" % (count + 1)])
+                position[1].append(result["j%02d_end_x" % (count + 1)])
+                position[1].append(result["j%02d_end_y" % (count + 1)])
+            else:
+                position[0].append(field[0] - result["j%02d_start_x" % (count + 1)])
+                position[0].append(field[1] - result["j%02d_start_y" % (count + 1)])
+                position[1].append(field[0] - result["j%02d_end_x" % (count + 1)])
+                position[1].append(field[1] - result["j%02d_end_y" % (count + 1)])
 
-            self._players.append(player.Player(self._index, x, x + 1, self._name + '_' + str(x + 1), [position[0][0], position[0][1]], [position[1][0], position[1][1]]))
+            self._players.append(player.Player(self._index, pid, count, [position[0][0], position[0][1]], [position[1][0], position[1][1]], db_connection))
+            count += 1
 
         Team.count += 1
 
