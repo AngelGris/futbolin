@@ -11,6 +11,7 @@ class Stats:
         self._possesion = 0
         self._possesionLastChange = 0
         self._possesionTime = [0, 0]
+        self._shots = [[0, 0], [0, 0]]
 
     def __str__ (self):
         possesionPerc = [self._possesionTime[0] * 100.0 / (self._possesionTime[0] + self._possesionTime[1]), self._possesionTime[1] * 100.0 / (self._possesionTime[0] + self._possesionTime[1])]
@@ -22,6 +23,7 @@ class Stats:
         output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Goles:', *self._goals, width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
         output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Posesión:', Stats.formatTime(self._possesionTime[0]), Stats.formatTime(self._possesionTime[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
         output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Posesión %:', '{:05.2f}%'.format(possesionPerc[0]), '{:05.2f}%'.format(possesionPerc[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
+        output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Disparos:', str(self._shots[0][0]) + ' (' + str(self._shots[0][1]) + ')', str(self._shots[1][0]) + ' (' + str(self._shots[1][1]) + ')', width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
         return output
 
     def _printAction(self, level, action):
@@ -40,9 +42,6 @@ class Stats:
             self._possesionTime[self._possesion] += self._time - self._possesionLastChange
             self._possesion = team
             self._possesionLastChange = self._time
-
-    def execAttackingHeader(self, team, player):
-        self._printAction(0, str(player) + ' cabecea en el área')
 
     def execCornerKick(self, team, player):
         self._printAction(0, str(player) + ' va a ejecutar el tiro de esquina')
@@ -77,6 +76,15 @@ class Stats:
     def execGoalKick(self, team, player):
         self._printAction(2, str(player) + ' saca desde el arco')
 
+    def execHeaderAway(self, team, player):
+        self._shots[team][0] += 1
+        self._printAction(0, str(player) + ' cabecea fuera')
+
+    def execHeaderOnTarget(self, team, player):
+        self._shots[team][0] += 1
+        self._shots[team][1] += 1
+        self._printAction(0, str(player) + ' cabecea al arco...')
+
     def execInterception(self, team, player1, player2):
         self._setPossesion(team)
         self._printAction(2, str(player2) + ' intercepta el pase de ' + str(player1))
@@ -92,9 +100,12 @@ class Stats:
         self._printAction(2, str(player) + ' corre con la pelota')
 
     def execShootAway(self, team, player):
+        self._shots[team][0] += 1
         self._printAction(0, str(player) + ' dispara desviado, saque de arco')
 
     def execShootOnGoal(self, team, player):
+        self._shots[team][0] += 1
+        self._shots[team][1] += 1
         self._printAction(0, str(player) + ' tira al arco...')
 
     def execScore(self, team, player):
@@ -113,6 +124,9 @@ class Stats:
 
     def getGoals(self):
         return self._goals
+
+    def getShots(self):
+        return self._shots
 
     def getTime(self):
         return self._time

@@ -80,9 +80,12 @@ class Team:
         probs = [0, 0, 0, 0] # 0 = running, 1 = passing, 2 = shooting, 3 = dribbling
         plays = [2, 3, 4, 7] # 0 = running, 1 = passing, 2 = shooting, 3 = dribbling
 
-        if goal_distance <= self._players[player].getShootingStrength():
+        if goal_distance <= self._players[player].getMaxStrength():
             # In shooting range
-            probs[2] = int(math.pow((self._players[player].getShootingStrength() - goal_distance) / self._players[player].getShootingStrength(),2) * 100)
+            if (goal_distance < self._players[player].getShootingStrength()):
+                probs[2] = self._players[player].getMaxStrength() - int(math.pow(goal_distance, 2)/self._players[player].getShootingStrength())
+            else:
+                probs[2] = int(math.pow(self._players[player].getMaxStrength() - goal_distance, 2)/(self._players[player].getMaxStrength() - self._players[player].getShootingStrength()))
 
         if closest_rival[1] > (closest_rival[2] * 2):
             # No near rival

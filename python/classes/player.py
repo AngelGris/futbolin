@@ -7,7 +7,7 @@ class Player:
     # Constants
     _MAX_PRECISION = 100.0
     _MAX_SPEED = 8.0 # Meters per second
-    _MAX_STRENGTH = 65.0 # How long it can shoot (Meters)
+    _MAX_STRENGTH = 50.0 # How long it can shoot (Meters)
 
     def __init__(self, team, id, index, pos_def, pos_att, db_connection):
         self._team = team
@@ -61,6 +61,9 @@ class Player:
     def getJumping(self):
         return self._jumping
 
+    def getMaxStrength(self):
+        return self._MAX_STRENGTH
+
     def getMaxSpeed(self):
         return Player._MAX_SPEED
 
@@ -78,7 +81,10 @@ class Player:
         if distance >= self._MAX_STRENGTH:
             return 0
         else:
-            return int(math.log(self._MAX_STRENGTH - distance, self._MAX_STRENGTH) * (self._MAX_PRECISION * self._precision / 100))
+            if distance < self.getShootingStrength():
+                return self._MAX_STRENGTH - int(math.pow(distance, 2) / self._precision)
+            else:
+                return int(math.pow(self._MAX_STRENGTH - distance, 2)/(self._MAX_STRENGTH - self._precision))
 
     def getProbsToRun(self):
         return Helper.calculateDistance(self._pos_cur, self._pos_att) / Helper.calculateDistance(self._pos_def, self._pos_att)

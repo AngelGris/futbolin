@@ -43,14 +43,15 @@ db_connection = mysql.Mysql()
 games_count = 0
 games_closed = 0
 goals_total = [0, 0]
+shots_total = [[0,0],[0,0]]
 results = [0, 0, 0]
 time_step = 2.0
 ball = bal.Ball([45.0, 60.0])
 field_size = Field.getSize()
 teams = [team.Team(args[0], field_size, db_connection), team.Team(args[1], field_size, db_connection)]
 
-for i in range(1):
-#while True:
+#for i in range(2):
+while True:
     print('*** REINICIAR ***')
     time_total = 2700
     time_half = 1
@@ -81,6 +82,8 @@ for i in range(1):
             #  4 = Shoot to the goal
             #  5 = Goal kick
             #  6 = Corner kick
+            #  7 = Dribbling
+            #  8 = Free kick
             if play_type == 1:
                 # Kick off
                 teams[0].resetPositions()
@@ -176,7 +179,7 @@ for i in range(1):
                         time_update += statistics.increaseTime(time_step)
                 else:
                     # Shoot away
-                    statistics.execShootAway(team, teams[possesion_team].getPlayer(possesion_player))
+                    statistics.execShootAway(possesion_team, teams[possesion_team].getPlayer(possesion_player))
                     ball.setPlayer(teams[rival_team].getPlayer(0))
                     time_update += statistics.increaseTime(time_step)
                     play_type = 5
@@ -219,10 +222,10 @@ for i in range(1):
                 r = random.randint(0, header_attacking[1] + header_defending[1])
                 if (r < header_attacking[1]):
                     # Attacking header
-                    statistics.execAttackingHeader(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
                     r = random.randint(0, 100)
                     if (r < header_attacking[2]):
                         # Heading on target
+                        statistics.execHeaderOnTarget(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
                         r = random.randint(0, header_attacking[2] + teams[rival_team].getPlayer(0).getGoalKeeping())
 
                         if r < header_attacking[2]:
@@ -248,7 +251,7 @@ for i in range(1):
                             time_update += statistics.increaseTime(time_step)
                     else:
                         # Heading out
-                        statistics.execShootAway(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
+                        statistics.execHeaderAway(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
                         ball.setPlayer(teams[rival_team].getPlayer(0))
                         time_update += statistics.increaseTime(time_step)
                         play_type = 5
@@ -327,10 +330,10 @@ for i in range(1):
                     r = random.randint(0, header_attacking[1] + header_defending[1])
                     if (r < header_attacking[1]):
                         # Attacking header
-                        statistics.execAttackingHeader(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
                         r = random.randint(0, 100)
                         if (r < header_attacking[2]):
                             # Heading on target
+                            statistics.execHeaderOnTarget(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
                             r = random.randint(0, header_attacking[2] + teams[rival_team].getPlayer(0).getGoalKeeping())
 
                             if r < header_attacking[2]:
@@ -356,7 +359,7 @@ for i in range(1):
                                 time_update += statistics.increaseTime(time_step)
                         else:
                             # Heading out
-                            statistics.execShootAway(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
+                            statistics.execHeaderAway(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
                             ball.setPlayer(teams[rival_team].getPlayer(0))
                             time_update += statistics.increaseTime(time_step)
                             play_type = 5
@@ -409,7 +412,7 @@ for i in range(1):
                             time_update += statistics.increaseTime(time_step)
                     else:
                         # Shoot away
-                        statistics.execShootAway(team, teams[possesion_team].getPlayer(possesion_player))
+                        statistics.execShootAway(possesion_team, teams[possesion_team].getPlayer(possesion_player))
                         ball.setPlayer(teams[rival_team].getPlayer(0))
                         time_update += statistics.increaseTime(time_step)
                         play_type = 5
@@ -446,6 +449,13 @@ for i in range(1):
     else:
         results[1] += 1
 
+    shots = statistics.getShots()
+    shots_total[0][0] += shots[0][0]
+    shots_total[0][1] += shots[0][1]
+    shots_total[1][0] += shots[1][0]
+    shots_total[1][1] += shots[1][1]
+    total_shots = [shots_total[0][0] + shots_total[1][0], shots_total[0][1] + shots_total[1][1]]
+
     games_count += 1
     goals_total[0] += goals[0]
     goals_total[1] += goals[1]
@@ -453,7 +463,10 @@ for i in range(1):
         games_closed += 1
 
     print('Partidos:', games_count)
-    print(results)
-    print(goals_total[0], '(', '{:05.2f}'.format(goals_total[0] / games_count), ') -', goals_total[1], '(', '{:05.2f}'.format(goals_total[1] / games_count), ')')
-    print('{:05.2f}'.format((goals_total[0] + goals_total[1]) / games_count), ' goles por partido')
+    print('Resultados:', results)
+    print('Goles por equipo:', goals_total[0], '(', '{:05.2f}'.format(goals_total[0] / games_count), ') -', goals_total[1], '(', '{:05.2f}'.format(goals_total[1] / games_count), ')')
+    print('Goles por partido:', '{:05.2f}'.format((goals_total[0] + goals_total[1]) / games_count))
     print('Partidos sin goles:', games_closed)
+    print('Disparos por equipo:', str(shots_total[0][0]), '(', str(shots_total[0][1]), ') -', str(shots_total[1][0]), '(', str(shots_total[1][1]), ')')
+    print('Disparos total:', str(total_shots[0]), '(', str(total_shots[1]), ')')
+    print('Disparos por partido:', '{:05.2f}'.format(total_shots[0] / games_count), '(', '{:05.2f}'.format(total_shots[1] / games_count), ')')
