@@ -3,6 +3,7 @@
 # Imports
 import configparser
 import MySQLdb
+import os
 
 class Mysql:
     _mysql_connection = None
@@ -10,7 +11,7 @@ class Mysql:
     def __init__(self):
         # Load configuration
         config = configparser.ConfigParser()
-        config.read('conf.ini')
+        config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'conf.ini'))
 
         # MySQL connection
         self._mysql_connection = MySQLdb.connect(config['MYSQL']['Host'], config['MYSQL']['User'], config['MYSQL']['Pass'], config['MYSQL']['Database'])
