@@ -38,7 +38,7 @@ class Player:
         self._tackling = response['tackling'] # Chances to get the ball when tackling
 
     def __str__(self):
-        return '(%d) %d - %s: %f, %f' % (self._team, self._number, self._short_name, self._pos_cur[0], self._pos_cur[1])
+        return '(%d) %s' % (self._number, self._short_name)
 
     def getDefending(self):
         return self._defending

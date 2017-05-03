@@ -2,9 +2,14 @@
 
 import random
 import math
+import json
+import time
+import os
 
 class Stats:
-    def __init__(self, debugLevel = 0, outputFile = ''):
+    def __init__(self, local_id, visit_id, debugLevel = 0, outputFile = ''):
+        self._local = local_id
+        self._visit = visit_id
         self._debugLevel = debugLevel
         self._outputFile = outputFile
         if outputFile != '':
@@ -17,15 +22,14 @@ class Stats:
         self._shots = [[0, 0], [0, 0]]
 
     def __str__ (self):
-        possesionPerc = [self._possesionTime[0] * 100.0 / (self._possesionTime[0] + self._possesionTime[1]), self._possesionTime[1] * 100.0 / (self._possesionTime[0] + self._possesionTime[1])]
-
+        self._possesionPerc = [self._possesionTime[0] * 100.0 / (self._possesionTime[0] + self._possesionTime[1]), self._possesionTime[1] * 100.0 / (self._possesionTime[0] + self._possesionTime[1])]
 
         cols = [15, 10, 10]
         total_width = cols[0] + cols[1] + cols[2] + 2
         output =  '{:*^{width}}'.format('ESTADISTICAS', width=total_width) + '\n'
         output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Goles:', *self._goals, width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
         output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Posesión:', Stats.formatTime(self._possesionTime[0]), Stats.formatTime(self._possesionTime[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
-        output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Posesión %:', '{:05.2f}%'.format(possesionPerc[0]), '{:05.2f}%'.format(possesionPerc[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
+        output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Posesión %:', '{:05.2f}%'.format(self._possesionPerc[0]), '{:05.2f}%'.format(self._possesionPerc[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
         output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Disparos:', str(self._shots[0][0]) + ' (' + str(self._shots[0][1]) + ')', str(self._shots[1][0]) + ' (' + str(self._shots[1][1]) + ')', width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
         return output
 
@@ -63,7 +67,7 @@ class Stats:
             elif level <= self._debugLevel:
                 print(self.getFormattedTime(), '-', description)
         else:
-            self._output.append([self.getFormattedTime, team, action, description])
+            self._output.append([self.getFormattedTime(), team, action, description])
 
     def _setPossesion(self, team):
         if team != self._possesion:
@@ -164,3 +168,27 @@ class Stats:
         self._time += step
 
         return step
+
+    def writeOutput(self):
+        output = {
+            'timestamp' : int(time.time()),
+            'local' : {
+                'id' : self._local,
+                'goals' : self._goals[0],
+                'posession' : Stats.formatTime(self._possesionTime[0]),
+                'posessionPer' : '{:05.2f}%'.format(self._possesionPerc[0]),
+                'shots' : self._shots[0][0],
+                'shotsOnTarget' : self._shots[0][1]
+            },
+            'visit' : {
+                'id' : self._visit,
+                'goals' : self._goals[1],
+                'posession' : Stats.formatTime(self._possesionTime[1]),
+                'posessionPer' : '{:05.2f}%'.format(self._possesionPerc[1]),
+                'shots' : self._shots[1][0],
+                'shotsOnTarget' : self._shots[1][1]
+            },
+            'plays' : self._output,
+        }
+        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'logs/') + self._outputFile, 'a') as out:
+            out.write(json.dumps(output) + '\n')

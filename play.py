@@ -62,7 +62,7 @@ for i in range(1):
     time_total = 2700
     time_half = 1
     play_type = 1
-    statistics = stats.Stats(args[2], output_file)
+    statistics = stats.Stats(args[0], args[1], args[2], output_file)
 
     print('*** COMIENZA EL PARTIDO ***')
     kickoff_team = random.randint(0,1)
@@ -476,3 +476,6 @@ for i in range(1):
     print('Disparos por equipo:', str(shots_total[0][0]), '(', str(shots_total[0][1]), ') -', str(shots_total[1][0]), '(', str(shots_total[1][1]), ')')
     print('Disparos total:', str(total_shots[0]), '(', str(total_shots[1]), ')')
     print('Disparos por partido:', '{:05.2f}'.format(total_shots[0] / games_count), '(', '{:05.2f}'.format(total_shots[1] / games_count), ')')
+
+    if (output_file != ''):
+        statistics.writeOutput()
