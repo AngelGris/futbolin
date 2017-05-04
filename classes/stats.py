@@ -20,6 +20,7 @@ class Stats:
         self._possesionLastChange = 0
         self._possesionTime = [0, 0]
         self._shots = [[0, 0], [0, 0]]
+        self._scorers = []
 
     def __str__ (self):
         self._possesionPerc = [self._possesionTime[0] * 100.0 / (self._possesionTime[0] + self._possesionTime[1]), self._possesionTime[1] * 100.0 / (self._possesionTime[0] + self._possesionTime[1])]
@@ -92,6 +93,7 @@ class Stats:
 
     def execFreekickScore(self, team, player):
         self._printAction(0, team, 6, 'GOOOOOOLLLL de ' + str(player) + ' de tiro libre!!!')
+        self._scorers.append([self.getFormattedTime(), team, player])
         self._goals[team] += 1
 
     def execGoalkeeperCutsCrossing(self, team, player):
@@ -142,6 +144,7 @@ class Stats:
 
     def execScore(self, team, player):
         self._printAction(0, team, 19, 'GOOOOOLLLL!!!!! de ' + str(player))
+        self._scorers.append([self.getFormattedTime(), team, player])
         self._goals[team] += 1
 
     def execTackling(self, team, player1, player2):
@@ -189,6 +192,7 @@ class Stats:
                 'shotsOnTarget' : self._shots[1][1]
             },
             'plays' : self._output,
+            'scorers' : self._scorers,
         }
         with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'logs/') + self._outputFile, 'a') as out:
             out.write(json.dumps(output) + '\n')
