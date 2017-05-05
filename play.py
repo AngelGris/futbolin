@@ -62,7 +62,7 @@ for i in range(1):
     time_total = 2700
     time_half = 1
     play_type = 1
-    statistics = stats.Stats(args[0], args[1], args[2], output_file)
+    statistics = stats.Stats(teams[0], teams[1], args[2], output_file)
 
     print('*** COMIENZA EL PARTIDO ***')
     kickoff_team = random.randint(0,1)

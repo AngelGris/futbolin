@@ -7,9 +7,9 @@ import time
 import os
 
 class Stats:
-    def __init__(self, local_id, visit_id, debugLevel = 0, outputFile = ''):
-        self._local = local_id
-        self._visit = visit_id
+    def __init__(self, local, visit, debugLevel = 0, outputFile = ''):
+        self._local = local
+        self._visit = visit
         self._debugLevel = debugLevel
         self._outputFile = outputFile
         if outputFile != '':
@@ -176,20 +176,22 @@ class Stats:
         output = {
             'timestamp' : int(time.time()),
             'local' : {
-                'id' : self._local,
+                'id' : self._local.getId(),
                 'goals' : self._goals[0],
                 'posession' : Stats.formatTime(self._possesionTime[0]),
                 'posessionPer' : '{:05.2f}%'.format(self._possesionPerc[0]),
                 'shots' : self._shots[0][0],
-                'shotsOnTarget' : self._shots[0][1]
+                'shotsOnTarget' : self._shots[0][1],
+                'formation' : self._local.getFormation(),
             },
             'visit' : {
-                'id' : self._visit,
+                'id' : self._visit.getId(),
                 'goals' : self._goals[1],
                 'posession' : Stats.formatTime(self._possesionTime[1]),
                 'posessionPer' : '{:05.2f}%'.format(self._possesionPerc[1]),
                 'shots' : self._shots[1][0],
-                'shotsOnTarget' : self._shots[1][1]
+                'shotsOnTarget' : self._shots[1][1],
+                'formation' : self._visit.getFormation(),
             },
             'plays' : self._output,
             'scorers' : self._scorers,

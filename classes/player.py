@@ -38,7 +38,7 @@ class Player:
         self._tackling = response['tackling'] # Chances to get the ball when tackling
 
     def __str__(self):
-        return '(%d) %s' % (self._number, self._short_name)
+        return self._short_name
 
     def getDefending(self):
         return self._defending
@@ -76,6 +76,9 @@ class Player:
     def getPosition(self):
         return self._pos_cur
 
+    def getPositionDefensive(self):
+        return self._pos_def
+
     def getPrecision(self, goal):
         distance = Helper.calculateDistance(self._pos_cur, goal)
         if distance >= self._MAX_STRENGTH:
@@ -91,6 +94,9 @@ class Player:
 
     def getShootingStrength(self):
         return self._strength * Player._MAX_STRENGTH / 100
+
+    def getShortName(self):
+        return self._short_name
 
     def getSpeed(self):
         return self._speed * Player._MAX_SPEED / 100
