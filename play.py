@@ -58,18 +58,15 @@ teams = [team.Team(args[0], field_size, db_connection), team.Team(args[1], field
 
 for i in range(1):
 #while True:
-    print('*** REINICIAR ***')
     time_total = 2700
     time_half = 1
     play_type = 1
     statistics = stats.Stats(teams[0], teams[1], args[2], output_file)
 
-    print('*** COMIENZA EL PARTIDO ***')
     kickoff_team = random.randint(0,1)
     kickoff_team = 1
     while(time_half <= 2):
         print('*** COMIENZO ' + ('PRIMER' if time_half == 1 else 'SEGUNDO') + ' TIEMPO ***')
-        print('*** SACA EL EQUIPO ' + ('LOCAL' if kickoff_team == 0 else 'VISITANTE') + ' ***')
         teams[0].resetPositions()
         teams[1].resetPositions()
         ball.setPosition([45.0, 60.0])
@@ -440,11 +437,8 @@ for i in range(1):
         kickoff_team = (kickoff_team + 1) % 2
         play_type = 1
 
-    print('*** TERMINA EL PARTIDO ***')
-    print('')
     print('')
     print(statistics)
-    print('')
     print('')
 
     goals = statistics.getGoals()
