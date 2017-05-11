@@ -175,6 +175,7 @@ class Stats:
     def writeOutput(self):
         output = {
             'timestamp' : int(time.time()),
+            'stadium' : self._local.getStadiumName(),
             'local' : {
                 'id' : self._local.getId(),
                 'goals' : self._goals[0],
