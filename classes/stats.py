@@ -4,6 +4,7 @@ import random
 import math
 import json
 import time
+import datetime
 import os
 
 class Stats:
@@ -175,9 +176,12 @@ class Stats:
 
         return step
 
-    def writeOutput(self):
+    def writeOutput(self, db_connection):
+        matchTime = int(time.time())
+        matchDateTime = datetime.datetime.fromtimestamp(matchTime).strftime('%Y-%m-%d %H:%M:%S')
+
         output = {
-            'timestamp' : int(time.time()),
+            'timestamp' : matchTime,
             'stadium' : self._local.getStadiumName(),
             'local' : {
                 'id' : self._local.getId(),
@@ -202,3 +206,11 @@ class Stats:
         }
         with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'logs/') + self._outputFile, 'a') as out:
             out.write(json.dumps(output) + '\n')
+
+        winner = 0
+        if (self._goals[0] > self._goals[1]):
+            winner = 1
+        else:
+            winner = 2
+
+        db_connection.query('INSERT INTO `matches` (`stadium`, `type`, `local_id`, `local_goals`, `visit_id`, `visit_goals`, `winner`, `logfile`, `created_at`, `updated_at`) VALUES (\'' + self._local.getStadiumName() + '\', 0, ' + str(self._local.getId()) + ', ' + str(self._goals[0]) + ', ' + str(self._visit.getId()) + ', ' + str(self._goals[1]) + ', ' + str(winner) + ', \'' + self._outputFile + '\', \'' + matchDateTime + '\', \'' + matchDateTime + '\')', 0)

@@ -26,5 +26,7 @@ class Mysql:
         if results == 1:
             r = r.fetch_row(1, 1)
             return r[0]
-        else:
+        elif results > 1:
             return r.fetch_row(results, 1)
+        else:
+            self._mysql_connection.commit()

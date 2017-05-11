@@ -472,4 +472,4 @@ for i in range(1):
     print('Disparos por partido:', '{:05.2f}'.format(total_shots[0] / games_count), '(', '{:05.2f}'.format(total_shots[1] / games_count), ')')
 
     if (output_file != ''):
-        statistics.writeOutput()
+        statistics.writeOutput(db_connection)
