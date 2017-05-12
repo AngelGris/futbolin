@@ -221,7 +221,7 @@ for i in range(1):
                         ball.setPosition([0, 0])
 
                 header_attacking = teams[possesion_team].getHeadingPlayer(ball)
-                header_defending = teams[possesion_team].getHeadingPlayer(ball, False)
+                header_defending = teams[rival_team].getHeadingPlayer(ball, False)
                 r = random.randint(0, header_attacking[1] + header_defending[1])
                 if (r < header_attacking[1]):
                     # Attacking header

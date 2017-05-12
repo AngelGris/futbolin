@@ -101,6 +101,10 @@ class Team:
         for x in range(1,11):
             probs[x] = self._players[0].getJumping()
 
+        # Centering player can't head
+        if ball.getTeam() == self._index:
+            probs[ball.getPlayer().getIndex()] = 0
+
         total = 0
         for x in range(11):
             total += probs[x]
