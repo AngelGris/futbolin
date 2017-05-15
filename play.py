@@ -18,12 +18,12 @@ from classes.helper import Helper
 # 3 = debug level
 # 4 = output file name (optional)
 
-if len(sys.argv) < 3:
-    print('Missing arguments (Home team ID, Visit team ID, Debug level)')
+if len(sys.argv) < 4:
+    print('Missing arguments (Home team ID, Visit team ID, Match type, Debug level)')
     exit()
 
 args = []
-for i in range(3):
+for i in range(4):
     try:
         args.append(int(sys.argv[i + 1]))
     except ValueError:
@@ -32,6 +32,8 @@ for i in range(3):
         elif (i == 1):
             print('Visit team ID must be an integer')
         elif (i == 2):
+            print('Match type must be an integer')
+        elif (i == 3):
             print('Debug level must be an integer')
         exit()
     except:
@@ -39,7 +41,7 @@ for i in range(3):
         raise
 
 try:
-    output_file = sys.argv[4]
+    output_file = sys.argv[5]
 except:
     output_file = ''
 
@@ -61,7 +63,7 @@ for i in range(1):
     time_total = 2700
     time_half = 1
     play_type = 1
-    statistics = stats.Stats(teams[0], teams[1], args[2], output_file)
+    statistics = stats.Stats(teams[0], teams[1], args[2], args[3], output_file)
 
     kickoff_team = random.randint(0,1)
     kickoff_team = 1

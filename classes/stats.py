@@ -8,9 +8,10 @@ import datetime
 import os
 
 class Stats:
-    def __init__(self, local, visit, debugLevel = 0, outputFile = ''):
+    def __init__(self, local, visit, matchType, debugLevel = 0, outputFile = ''):
         self._local = local
         self._visit = visit
+        self._matchType = matchType
         self._debugLevel = debugLevel
         self._outputFile = outputFile
         if outputFile != '':
@@ -213,4 +214,4 @@ class Stats:
         elif self._goals[0] < self._goals[1]:
             winner = 2
 
-        db_connection.query('INSERT INTO `matches` (`stadium`, `type`, `local_id`, `local_goals`, `visit_id`, `visit_goals`, `winner`, `logfile`, `created_at`, `updated_at`) VALUES (\'' + self._local.getStadiumName() + '\', 0, ' + str(self._local.getId()) + ', ' + str(self._goals[0]) + ', ' + str(self._visit.getId()) + ', ' + str(self._goals[1]) + ', ' + str(winner) + ', \'' + self._outputFile + '\', \'' + matchDateTime + '\', \'' + matchDateTime + '\')', 0)
+        db_connection.query('INSERT INTO `matches` (`stadium`, `type_id`, `local_id`, `local_goals`, `visit_id`, `visit_goals`, `winner`, `logfile`, `created_at`, `updated_at`) VALUES (\'' + self._local.getStadiumName() + '\', ' + str(self._matchType) + ', ' + str(self._local.getId()) + ', ' + str(self._goals[0]) + ', ' + str(self._visit.getId()) + ', ' + str(self._goals[1]) + ', ' + str(winner) + ', \'' + self._outputFile + '\', \'' + matchDateTime + '\', \'' + matchDateTime + '\')', 0)
