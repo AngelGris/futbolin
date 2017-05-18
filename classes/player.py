@@ -85,9 +85,9 @@ class Player:
             return 0
         else:
             if distance < self.getShootingStrength():
-                return self._MAX_STRENGTH - int(math.pow(distance, 2) / self._precision)
+                return self._MAX_STRENGTH - int(math.pow(distance, 2) / (self._precision / 2))
             else:
-                return int(math.pow(self._MAX_STRENGTH - distance, 2)/(self._MAX_STRENGTH - self._precision))
+                return int(math.pow(self._MAX_STRENGTH - distance, 2)/(self._MAX_STRENGTH - (self._precision / 2)))
 
     def getProbsToRun(self):
         return Helper.calculateDistance(self._pos_cur, self._pos_att) / Helper.calculateDistance(self._pos_def, self._pos_att)
