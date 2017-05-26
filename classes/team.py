@@ -9,11 +9,11 @@ from classes.helper import Helper
 class Team:
     _db_connection = None
     count = 0
+    _enabled = False
 
     def __init__(self, id, field, db_connection):
         self._db_connection = db_connection
         result = self._db_connection.query("SELECT `teams`.`name`, `teams`.`short_name`, `teams`.`stadium_name`, `teams`.`formation`, `strategies`.`j01_start_x`, `strategies`.`j01_start_y`, `strategies`.`j01_end_x`, `strategies`.`j01_end_y`, `strategies`.`j02_start_x`, `strategies`.`j02_start_y`, `strategies`.`j02_end_x`, `strategies`.`j02_end_y`, `strategies`.`j03_start_x`, `strategies`.`j03_start_y`, `strategies`.`j03_end_x`, `strategies`.`j03_end_y`, `strategies`.`j04_start_x`, `strategies`.`j04_start_y`, `strategies`.`j04_end_x`, `strategies`.`j04_end_y`, `strategies`.`j05_start_x`, `strategies`.`j05_start_y`, `strategies`.`j05_end_x`, `strategies`.`j05_end_y`, `strategies`.`j06_start_x`, `strategies`.`j06_start_y`, `strategies`.`j06_end_x`, `strategies`.`j06_end_y`, `strategies`.`j07_start_x`, `strategies`.`j07_start_y`, `strategies`.`j07_end_x`, `strategies`.`j07_end_y`, `strategies`.`j08_start_x`, `strategies`.`j08_start_y`, `strategies`.`j08_end_x`, `strategies`.`j08_end_y`, `strategies`.`j09_start_x`, `strategies`.`j09_start_y`, `strategies`.`j09_end_x`, `strategies`.`j09_end_y`, `strategies`.`j10_start_x`, `strategies`.`j10_start_y`, `strategies`.`j10_end_x`, `strategies`.`j10_end_y`, `strategies`.`j11_start_x`, `strategies`.`j11_start_y`, `strategies`.`j11_end_x`, `strategies`.`j11_end_y` FROM `teams` INNER JOIN `strategies` ON `strategies`.`id` = `teams`.`strategy_id` WHERE `teams`.`id` = " + str(id) + " LIMIT 1", 1)
-
         self._id = id
         self._field = field
         self._index = Team.count
@@ -22,27 +22,34 @@ class Team:
         self._stadium_name = result['stadium_name']
         self._players = []
         self._substitutes = []
-        formation = json.loads(result['formation'])
-        count = 0
-        for pid in formation:
-            position = [[], []]
-            if (count < 11):
-                if self._index == 0:
-                    position[0].append(result["j%02d_start_x" % (count + 1)])
-                    position[0].append(result["j%02d_start_y" % (count + 1)])
-                    position[1].append(result["j%02d_end_x" % (count + 1)])
-                    position[1].append(result["j%02d_end_y" % (count + 1)])
-                else:
-                    position[0].append(field[0] - result["j%02d_start_x" % (count + 1)])
-                    position[0].append(field[1] - result["j%02d_start_y" % (count + 1)])
-                    position[1].append(field[0] - result["j%02d_end_x" % (count + 1)])
-                    position[1].append(field[1] - result["j%02d_end_y" % (count + 1)])
+        if (result['formation'] != ''):
+            formation = json.loads(result['formation'])
+            count = 0
+            players_added = 0
+            for pid in formation:
+                position = [[], []]
+                if int(pid) > 0:
+                    if (count < 11):
+                        if self._index == 0:
+                            position[0].append(result["j%02d_start_x" % (count + 1)])
+                            position[0].append(result["j%02d_start_y" % (count + 1)])
+                            position[1].append(result["j%02d_end_x" % (count + 1)])
+                            position[1].append(result["j%02d_end_y" % (count + 1)])
+                        else:
+                            position[0].append(field[0] - result["j%02d_start_x" % (count + 1)])
+                            position[0].append(field[1] - result["j%02d_start_y" % (count + 1)])
+                            position[1].append(field[0] - result["j%02d_end_x" % (count + 1)])
+                            position[1].append(field[1] - result["j%02d_end_y" % (count + 1)])
 
-                self._players.append(player.Player(self._index, pid, count, [position[0][0], position[0][1]], [position[1][0], position[1][1]], db_connection))
-            else:
-                self._substitutes.append(player.Player(self._index, pid, count, [0,0], [0,0], db_connection))
+                        self._players.append(player.Player(self._index, pid, count, [position[0][0], position[0][1]], [position[1][0], position[1][1]], db_connection))
+                        players_added += 1
+                    else:
+                        self._substitutes.append(player.Player(self._index, pid, count, [0,0], [0,0], db_connection))
 
-            count += 1
+                count += 1
+
+            if (players_added >= 7):
+                self._enabled = True
 
         Team.count += 1
 
@@ -63,6 +70,9 @@ class Team:
                     player = x
 
         return [player, distance_min, self._players[player].getSpeed()]
+
+    def getEnabled(self):
+        return self._enabled
 
     def getFormation(self):
         output = []

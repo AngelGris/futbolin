@@ -25,7 +25,9 @@ class Stats:
         self._scorers = []
 
     def __str__ (self):
-        self._possesionPerc = [self._possesionTime[0] * 100.0 / (self._possesionTime[0] + self._possesionTime[1]), self._possesionTime[1] * 100.0 / (self._possesionTime[0] + self._possesionTime[1])]
+        self._possesionPerc = [0, 0]
+        if (self._possesionTime[0] + self._possesionTime[1] > 0):
+            self._possesionPerc = [self._possesionTime[0] * 100.0 / (self._possesionTime[0] + self._possesionTime[1]), self._possesionTime[1] * 100.0 / (self._possesionTime[0] + self._possesionTime[1])]
 
         if self._outputFile == '':
             cols = [15, 10, 10]
@@ -67,6 +69,7 @@ class Stats:
         # 18 = Shoot on goal
         # 19 = Goal scored
         # 20 = Ball stolen
+        # 21 = Match suspended
         if self._outputFile == '':
             if self._debugLevel == 3:
                 input(self.getFormattedTime() + ' - ' + description)
@@ -138,6 +141,11 @@ class Stats:
     def execRun(self, team, player):
         self._printAction(2, team, 16, str(player) + ' corre con la pelota')
 
+    def execScore(self, team, player):
+        self._printAction(0, team, 19, 'GOOOOOLLLL!!!!! de ' + str(player))
+        self._scorers.append([self.getFormattedTime(), team, player])
+        self._goals[team] += 1
+
     def execShootAway(self, team, player):
         self._shots[team][0] += 1
         self._printAction(0, team, 17, str(player) + ' dispara desviado, saque de arco')
@@ -147,10 +155,13 @@ class Stats:
         self._shots[team][1] += 1
         self._printAction(0, team, 18, str(player) + ' tira al arco...')
 
-    def execScore(self, team, player):
-        self._printAction(0, team, 19, 'GOOOOOLLLL!!!!! de ' + str(player))
-        self._scorers.append([self.getFormattedTime(), team, player])
-        self._goals[team] += 1
+    def execSuspendMatch(self, team):
+        if (team is not None):
+            self._goals[team] = 2
+        else:
+            team = 1
+
+        self._printAction(0, team, 21, 'Partido suspendido por equipo incompleto')
 
     def execTackling(self, team, player1, player2):
         self._setPossesion(team)

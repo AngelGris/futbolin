@@ -65,6 +65,20 @@ for i in range(1):
     play_type = 1
     statistics = stats.Stats(teams[0], teams[1], args[2], args[3], output_file)
 
+    if (not teams[0].getEnabled() or not teams[1].getEnabled()):
+        if (teams[0].getEnabled()):
+            statistics.execSuspendMatch(0)
+        elif (teams[1].getEnabled()):
+            statistics.execSuspendMatch(1)
+        else:
+            statistics.execSuspendMatch(None)
+
+        print('')
+        print(statistics)
+        print('')
+        statistics.writeOutput(db_connection)
+        exit()
+
     kickoff_team = random.randint(0,1)
     kickoff_team = 1
     while(time_half <= 2):
