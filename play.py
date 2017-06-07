@@ -192,7 +192,7 @@ for i in range(1):
                             play_type = 0
                         else:
                             # Corner kick
-                            statistics.execGoalkeeperDefenceToCorner(possesion_team, teams[rival_team].getPlayer(0))
+                            statistics.execGoalkeeperDefenceToCorner(rival_team, teams[rival_team].getPlayer(0))
                             ball.setPlayer(teams[possesion_team].getPlayerCorner())
                             play_type = 6
                         time_update += statistics.increaseTime(time_step)
@@ -425,7 +425,7 @@ for i in range(1):
                                 play_type = 0
                             else:
                                 # Corner kick
-                                statistics.execGoalkeeperDefenceToCorner(possesion_team, teams[rival_team].getPlayer(0))
+                                statistics.execGoalkeeperDefenceToCorner(rival_team, teams[rival_team].getPlayer(0))
                                 ball.setPlayer(teams[possesion_team].getPlayerCorner())
                                 play_type = 6
                             time_update += statistics.increaseTime(time_step)

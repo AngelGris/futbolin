@@ -113,7 +113,7 @@ class Stats:
         self._printAction(0, team, 8, str(player) + ' ataja el remate')
 
     def execGoalkeeperDefenceToCorner(self, team, player):
-        self._printAction(0, (team + 1) % 2, 9, str(player) + ' saca el tiro al corner')
+        self._printAction(0, team, 9, str(player) + ' saca el tiro al corner')
 
     def execGoalKick(self, team, player):
         self._printAction(2, team, 10, str(player) + ' saca desde el arco')
