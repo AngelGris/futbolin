@@ -158,7 +158,7 @@ for i in range(1):
                     ball.setPlayer(teams[possesion_team].getPlayer(pass_to))
                 else:
                     # Pass intercepted
-                    statistics.execInterception(rival_team, teams[possesion_team].playerString(possesion_player), teams[rival_team].getPlayer(closest_rival[0]))
+                    statistics.execInterception(rival_team, teams[possesion_team].getPlayer(possesion_player), teams[rival_team].getPlayer(closest_rival[0]))
                     ball.setPlayer(teams[rival_team].getPlayer(closest_rival[0]))
 
                 play_type = 0
@@ -178,7 +178,7 @@ for i in range(1):
                     r = random.randint(0, 100)
                     if r < probs[0]:
                         # GOAL
-                        statistics.execScore(possesion_team, teams[possesion_team].playerString(possesion_player))
+                        statistics.execScore(possesion_team, teams[possesion_team].getPlayer(possesion_player))
                         ball.setPlayer(teams[rival_team].getPlayer(0))
                         time_update += statistics.increaseTime(time_step * 3)
                         play_type = 1
@@ -249,7 +249,7 @@ for i in range(1):
 
                         if r < header_attacking[2]:
                             # GOAL
-                            statistics.execScore(possesion_team, teams[possesion_team].playerString(header_attacking[0]))
+                            statistics.execScore(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
                             ball.setPlayer(teams[rival_team].getPlayer(0))
                             time_update += statistics.increaseTime(time_step * 3)
                             play_type = 1
@@ -357,7 +357,7 @@ for i in range(1):
 
                             if r < header_attacking[2]:
                                 # GOAL
-                                statistics.execScore(possesion_team, teams[possesion_team].playerString(header_attacking[0]))
+                                statistics.execScore(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
                                 ball.setPlayer(teams[rival_team].getPlayer(0))
                                 time_update += statistics.increaseTime(time_step * 3)
                                 play_type = 1
@@ -411,7 +411,7 @@ for i in range(1):
                         r = random.randint(0, 100)
                         if r < probs[0]:
                             # GOAL
-                            statistics.execFreekickScore(possesion_team, teams[possesion_team].playerString(possesion_player))
+                            statistics.execFreekickScore(possesion_team, teams[possesion_team].getPlayer(possesion_player))
                             ball.setPlayer(teams[rival_team].getPlayer(0))
                             time_update += statistics.increaseTime(time_step * 3)
                             play_type = 1
@@ -489,3 +489,14 @@ for i in range(1):
 
     if (output_file != ''):
         statistics.writeOutput(db_connection)
+
+    # If tournament match
+    if (args[2] == 3):
+        # Increase player's experience
+        if teams[0].getId() > 26:
+            for player in teams[0].getPlayersList():
+                player.saveExperience(db_connection)
+
+        if teams[1].getId() > 26:
+            for player in teams[1].getPlayersList():
+                player.saveExperience(db_connection)

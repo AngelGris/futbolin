@@ -204,6 +204,9 @@ class Team:
     def getPlayerCorner(self):
         return self._players[6]
 
+    def getPlayersList(self):
+        return self._players + self._substitutes
+
     def getStadiumName(self):
         return self._stadium_name
 

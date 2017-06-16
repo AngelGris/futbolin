@@ -36,6 +36,7 @@ class Player:
         self._speed = response['speed'] # Speed
         self._strength = response['strength'] # Strength to shoot on goal from far
         self._tackling = response['tackling'] # Chances to get the ball when tackling
+        self._plays = 0 # Player's interventions in the match
 
     def __str__(self):
         return self._short_name
@@ -107,8 +108,15 @@ class Player:
     def getTeam(self):
         return self._team
 
+    def increasePlay(self, count = 1):
+        self._plays += count
+
     def resetPosition(self, proportion = 0):
         self.setPosition([(proportion * (self._pos_att[0] - self._pos_def[0])) + self._pos_def[0], (proportion * (self._pos_att[1] - self._pos_def[1])) + self._pos_def[1]])
+
+    def saveExperience(self, db_connection):
+        experience = min(27, 7 + int(self._plays / 6))
+        db_connection.query("UPDATE `players` SET `experience` = `experience` + " + str(experience) + " WHERE `id` = " + str(self._id) + " LIMIT 1;", 0)
 
     def setHasBall(self, hasBall):
         self._hasBall = hasBall

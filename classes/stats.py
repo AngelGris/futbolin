@@ -85,72 +85,96 @@ class Stats:
             self._possesionLastChange = self._time
 
     def execCornerKick(self, team, player):
+        player.increasePlay()
         self._printAction(0, team, 1, str(player) + ' va a ejecutar el tiro de esquina')
 
     def execDefendingHeader(self, team, player):
+        player.increasePlay(2)
         self._printAction(0, team, 2, str(player) + ' rechaza de cabeza')
 
     def execDribbling(self, team, player1, player2):
+        player1.increasePlay()
+        player2.increasePlay()
         self._printAction(2, team, 3, str(player1) + ' escapa de la marca de ' + str(player2))
 
     def execFoul(self, team, player1, player2):
+        player1.increasePlay()
+        player2.increasePlay()
         self._printAction(1, team, 4, str(player2) + ' le hace falta a ' + str(player1))
 
     def execFreekickOnGoal(self, team, player):
+        player.increasePlay()
         self._printAction(0, team, 5, str(player) + ' patea el tiro libre directo al arco...')
 
     def execFreekickScore(self, team, player):
+        player.increasePlay()
         self._printAction(0, team, 6, 'GOOOOOOLLLL de ' + str(player) + ' de tiro libre!!!')
-        self._scorers.append([self.getFormattedTime(), team, player])
+        self._scorers.append([self.getFormattedTime(), team, player.getShortName()])
         self._goals[team] += 1
 
     def execGoalkeeperCutsCrossing(self, team, player):
+        player.increasePlay(10)
         self._setPossesion(team)
         self._printAction(1, team, 7, str(player) + ' sale y corta el centro')
 
     def execGoalkeeperDefence(self, team, player):
+        player.increasePlay(50)
         self._setPossesion(team)
         self._printAction(0, team, 8, str(player) + ' ataja el remate')
 
     def execGoalkeeperDefenceToCorner(self, team, player):
+        player.increasePlay(30)
         self._printAction(0, team, 9, str(player) + ' saca el tiro al corner')
 
     def execGoalKick(self, team, player):
+        player.increasePlay(5)
         self._printAction(2, team, 10, str(player) + ' saca desde el arco')
 
     def execHeaderAway(self, team, player):
+        player.increasePlay()
         self._shots[team][0] += 1
         self._printAction(0, team, 11, str(player) + ' cabecea fuera')
 
     def execHeaderOnTarget(self, team, player):
+        player.increasePlay()
         self._shots[team][0] += 1
         self._shots[team][1] += 1
         self._printAction(0, team, 12, str(player) + ' cabecea al arco...')
 
     def execInterception(self, team, player1, player2):
+        player1.increasePlay()
+        player2.increasePlay()
         self._setPossesion(team)
         self._printAction(2, team, 13, str(player2) + ' intercepta el pase de ' + str(player1))
 
     def execKickoff(self, team, player1, player2):
+        player1.increasePlay()
+        player2.increasePlay()
         self._setPossesion(team)
         self._printAction(1, team, 14, str(player1) + ' saca del medio para ' + str(player2))
 
     def execPassing(self, team, player1, player2):
+        player1.increasePlay()
+        player2.increasePlay()
         self._printAction(2, team, 15, str(player1) + ' pasa la pelota a ' + str(player2))
 
     def execRun(self, team, player):
+        player.increasePlay()
         self._printAction(2, team, 16, str(player) + ' corre con la pelota')
 
     def execScore(self, team, player):
+        player.increasePlay()
         self._printAction(0, team, 19, 'GOOOOOLLLL!!!!! de ' + str(player))
-        self._scorers.append([self.getFormattedTime(), team, player])
+        self._scorers.append([self.getFormattedTime(), team, player.getShortName()])
         self._goals[team] += 1
 
     def execShootAway(self, team, player):
+        player.increasePlay()
         self._shots[team][0] += 1
         self._printAction(0, team, 17, str(player) + ' dispara desviado, saque de arco')
 
     def execShootOnGoal(self, team, player):
+        player.increasePlay()
         self._shots[team][0] += 1
         self._shots[team][1] += 1
         self._printAction(0, team, 18, str(player) + ' tira al arco...')
@@ -164,6 +188,8 @@ class Stats:
         self._printAction(0, team, 21, 'Partido suspendido por equipo incompleto')
 
     def execTackling(self, team, player1, player2):
+        player1.increasePlay()
+        player2.increasePlay()
         self._setPossesion(team)
         self._printAction(2, team, 20, str(player2) + ' le quita la pelota a ' + str(player1))
 
