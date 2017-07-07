@@ -4,7 +4,7 @@ class Field:
     _height = 120.0
     _width = 90.0
 
-    def getGoalPosition(index):
+    def getGoalPositioning(index):
         if index == 0:
             return [Field._width / 2, 0]
         else:

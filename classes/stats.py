@@ -23,6 +23,7 @@ class Stats:
         self._possesionTime = [0, 0]
         self._shots = [[0, 0], [0, 0]]
         self._scorers = []
+        self._substitutions = [0, 0]
 
     def __str__ (self):
         self._possesionPerc = [0, 0]
@@ -37,6 +38,7 @@ class Stats:
             output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Posesión:', Stats.formatTime(self._possesionTime[0]), Stats.formatTime(self._possesionTime[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
             output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Posesión %:', '{:05.2f}%'.format(self._possesionPerc[0]), '{:05.2f}%'.format(self._possesionPerc[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
             output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Disparos:', str(self._shots[0][0]) + ' (' + str(self._shots[0][1]) + ')', str(self._shots[1][0]) + ' (' + str(self._shots[1][1]) + ')', width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
+            output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Cambios:', str(self._substitutions[0]), str(self._substitutions[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
         else:
             output = ''
         return output
@@ -70,6 +72,7 @@ class Stats:
         # 19 = Goal scored
         # 20 = Ball stolen
         # 21 = Match suspended
+        # 22 = Substitution
         if self._outputFile == '':
             if self._debugLevel == 3:
                 input(self.getFormattedTime() + ' - ' + description)
@@ -179,6 +182,10 @@ class Stats:
         self._shots[team][1] += 1
         self._printAction(0, team, 18, str(player) + ' tira al arco...')
 
+    def execSubstitution(self, team, player_out, player_in):
+        self._substitutions[team] += 1
+        self._printAction(0, team, 22, 'Sale ' + str(player_out) + ' y entra ' + str(player_in))
+
     def execSuspendMatch(self, team):
         if (team is not None):
             self._goals[team] = 2
@@ -205,6 +212,9 @@ class Stats:
     def getShots(self):
         return self._shots
 
+    def getSubstitutions(self):
+        return self._substitutions
+
     def getTime(self):
         return self._time
 
@@ -228,7 +238,7 @@ class Stats:
                 'posessionPer' : '{:05.2f}%'.format(self._possesionPerc[0]),
                 'shots' : self._shots[0][0],
                 'shotsOnTarget' : self._shots[0][1],
-                'formation' : self._local.getFormation(),
+                'formation' : self._local.getStartingFormation(),
             },
             'visit' : {
                 'id' : self._visit.getId(),
@@ -237,7 +247,7 @@ class Stats:
                 'posessionPer' : '{:05.2f}%'.format(self._possesionPerc[1]),
                 'shots' : self._shots[1][0],
                 'shotsOnTarget' : self._shots[1][1],
-                'formation' : self._visit.getFormation(),
+                'formation' : self._visit.getStartingFormation(),
             },
             'plays' : self._output,
             'scorers' : self._scorers,
