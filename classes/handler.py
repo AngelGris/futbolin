@@ -19,7 +19,7 @@ class Handler:
         time_step = 2.0
         ball = bal.Ball([45.0, 60.0])
         field_size = Field.getSize()
-        teams = [team.Team(local_id, field_size, db_connection, True), team.Team(visit_id, field_size, db_connection)]
+        teams = [team.Team(local_id, field_size, match_type, db_connection, True), team.Team(visit_id, field_size, match_type, db_connection)]
 
         time_total = 2700
         time_half = 1
