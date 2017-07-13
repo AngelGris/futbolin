@@ -249,7 +249,7 @@ class Stats:
                 'shots' : self._shots[1][0],
                 'shotsOnTarget' : self._shots[1][1],
                 'formation' : self._visit.getStartingFormation(),
-                'substitutions' : self._substitutions[0],
+                'substitutions' : self._substitutions[1],
             },
             'plays' : self._output,
             'scorers' : self._scorers,
