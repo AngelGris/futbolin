@@ -239,6 +239,7 @@ class Stats:
                 'shots' : self._shots[0][0],
                 'shotsOnTarget' : self._shots[0][1],
                 'formation' : self._local.getStartingFormation(),
+                'substitutions' : self._substitutions[0],
             },
             'visit' : {
                 'id' : self._visit.getId(),
@@ -248,6 +249,7 @@ class Stats:
                 'shots' : self._shots[1][0],
                 'shotsOnTarget' : self._shots[1][1],
                 'formation' : self._visit.getStartingFormation(),
+                'substitutions' : self._substitutions[0],
             },
             'plays' : self._output,
             'scorers' : self._scorers,
