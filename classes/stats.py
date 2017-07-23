@@ -93,6 +93,7 @@ class Stats:
 
     def execDefendingHeader(self, team, player):
         player.increasePlay(2)
+        self._setPossesion(team)
         self._printAction(0, team, 2, str(player) + ' rechaza de cabeza')
 
     def execDribbling(self, team, player1, player2):
@@ -131,6 +132,7 @@ class Stats:
 
     def execGoalKick(self, team, player):
         player.increasePlay(5)
+        self._setPossesion(team)
         self._printAction(2, team, 10, str(player) + ' saca desde el arco')
 
     def execHeaderAway(self, team, player):
