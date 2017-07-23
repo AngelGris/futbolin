@@ -64,11 +64,13 @@ class Player:
 
     def _staminaEffect(self, value):
         rate = 1
-        if self._stamina < 50:
-            if self._stamina < 25:
-                rate = (math.pow(self._stamina, 2) / 35) / 50
+        break_point = 40
+        inflexion = 28
+        if self._stamina < break_point:
+            if self._stamina < inflexion:
+                rate = (math.pow(self._stamina, 2) / inflexion) / break_point
             else:
-                rate = (50 - (math.pow(50 - self._stamina, 2) / 15)) / 50
+                rate = (break_point - (math.pow(break_point - self._stamina, 2) / (break_point - inflexion))) / break_point
 
         return max(1, int(value * rate))
 
@@ -133,19 +135,21 @@ class Player:
         return self._pos_def
 
     def getPrecision(self, goal):
-        distance = Helper.calculateDistance(self._pos_cur, goal)
-        if distance >= self._MAX_STRENGTH:
-            return 0
-        else:
-            if distance < self.getShootingStrength():
-                precision = self._MAX_STRENGTH - int(math.pow(distance, 2) / (self._precision / 2))
-            else:
-                precision = int(math.pow(self._MAX_STRENGTH - distance, 2)/(self._MAX_STRENGTH - (self._precision / 2)))
-
-        return self._staminaEffect(precision)
+        return self._staminaEffect(self.getProbsToShoot(Helper.calculateDistance(self._pos_cur, goal)) * self._precision)
 
     def getProbsToRun(self):
         return Helper.calculateDistance(self._pos_cur, self._pos_att) / Helper.calculateDistance(self._pos_def, self._pos_att)
+
+    def getProbsToShoot(self, distance):
+        rate = 0
+        correction_rate = 1.2
+        if distance <= self._MAX_STRENGTH:
+            if distance < (self.getShootingStrength() / correction_rate):
+                rate = (self._MAX_STRENGTH - (math.pow(distance, 2) / (self.getShootingStrength() / correction_rate))) / self._MAX_STRENGTH
+            else:
+                rate = (math.pow(self._MAX_STRENGTH - distance, 2) / (self._MAX_STRENGTH - (self.getShootingStrength() / correction_rate))) / self._MAX_STRENGTH
+
+        return rate
 
     def getShootingStrength(self):
         return self._staminaEffect(self._strength * Player._MAX_STRENGTH / 100)

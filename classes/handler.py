@@ -175,6 +175,8 @@ class Handler:
                         teams[0].checkSubstitutions(statistics)
                         teams[1].checkSubstitutions(statistics)
 
+                        ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+
                     # Goal kick
                     teams[0].resetPositionings(0.5)
                     teams[1].resetPositionings(0.5)

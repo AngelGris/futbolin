@@ -181,12 +181,7 @@ class Team:
         plays = [2, 3, 4, 7] # 0 = running, 1 = passing, 2 = shooting, 3 = dribbling
         player = self._players[player]
 
-        if goal_distance <= player.getMaxStrength():
-            # In shooting range
-            if (goal_distance < player.getShootingStrength()):
-                probs[2] = player.getMaxStrength() - int(math.pow(goal_distance, 2)/player.getShootingStrength())
-            else:
-                probs[2] = int(math.pow(player.getMaxStrength() - goal_distance, 2)/(player.getMaxStrength() - player.getShootingStrength()))
+        probs[2] = int(player.getProbsToShoot(goal_distance) * 50) # 50% is the highest chance to shoot on goal
 
         if closest_rival[1] > (closest_rival[2] * 2):
             # No near rival
