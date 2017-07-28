@@ -8,12 +8,13 @@ import datetime
 import os
 
 class Stats:
-    def __init__(self, local, visit, matchType, debugLevel = 0, outputFile = ''):
+    def __init__(self, local, visit, matchType, debugLevel = 0, outputFile = '', categoryId = 0):
         self._local = local
         self._visit = visit
         self._matchType = matchType
         self._debugLevel = debugLevel
         self._outputFile = outputFile
+        self._categoryId = categoryId
         if outputFile != '':
             self._output = []
         self._goals = [0, 0]
@@ -113,7 +114,7 @@ class Stats:
     def execFreekickScore(self, team, player):
         player.increasePlay()
         self._printAction(0, team, 6, 'GOOOOOOLLLL de ' + str(player) + ' de tiro libre!!!')
-        self._scorers.append([self.getFormattedTime(), team, player.getShortName()])
+        self._scorers.append([self.getFormattedTime(), team, player.getShortName(), player.getId()])
         self._goals[team] += 1
 
     def execGoalkeeperCutsCrossing(self, team, player):
@@ -170,7 +171,7 @@ class Stats:
     def execScore(self, team, player):
         player.increasePlay()
         self._printAction(0, team, 19, 'GOOOOOLLLL!!!!! de ' + str(player))
-        self._scorers.append([self.getFormattedTime(), team, player.getShortName()])
+        self._scorers.append([self.getFormattedTime(), team, player.getShortName(), player.getId()])
         self._goals[team] += 1
 
     def execShootAway(self, team, player):
@@ -225,6 +226,20 @@ class Stats:
         self._time += step
 
         return step
+
+    def saveScorers(self, db_connection):
+        scorers = [{}, {}]
+        for scorer in self._scorers:
+            try:
+                scorers[scorer[1]][scorer[3]] += 1
+            except:
+                scorers[scorer[1]][scorer[3]] = 1
+
+        for player in scorers[0]:
+            db_connection.query('INSERT INTO `scorers` (`team_id`, `player_id`, `category_id`, `goals`) VALUES (' + str(self._local.getId()) + ', ' + str(player) + ', ' + str(self._categoryId) + ', ' + str(scorers[0][player]) + ') ON DUPLICATE KEY UPDATE `goals` = `goals` + ' + str(scorers[0][player]), 0)
+
+        for player in scorers[1]:
+            db_connection.query('INSERT INTO `scorers` (`team_id`, `player_id`, `category_id`, `goals`) VALUES (' + str(self._visit.getId()) + ', ' + str(player) + ', ' + str(self._categoryId) + ', ' + str(scorers[1][player]) + ') ON DUPLICATE KEY UPDATE `goals` = `goals` + ' + str(scorers[1][player]), 0)
 
     def writeOutput(self, db_connection):
         matchTime = int(time.time())

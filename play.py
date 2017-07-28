@@ -10,9 +10,10 @@ from classes.handler import Handler
 # 2 = visit team ID
 # 3 = debug level
 # 4 = output file name (optional)
+# 5 = tournament category ID (optional)
 
 if len(sys.argv) < 4:
-    print('Missing arguments (Home team ID, Visit team ID, Match type, Debug level)')
+    print('Missing arguments (Home team ID, Visit team ID, Match type, Debug level, [Output file, Category ID])')
     exit()
 
 args = []
@@ -38,4 +39,9 @@ try:
 except:
     output_file = ''
 
-Handler.execute(args[0], args[1], args[2], args[3], output_file)
+try:
+    category_id = sys.argv[6]
+except:
+    category_id = ''
+
+Handler.execute(args[0], args[1], args[2], args[3], output_file, category_id)

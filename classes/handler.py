@@ -12,7 +12,7 @@ from classes.field import Field
 from classes.helper import Helper
 
 class Handler:
-    def execute(local_id, visit_id, match_type, debug_level, output_file = ''):
+    def execute(local_id, visit_id, match_type, debug_level, output_file = '', categoryId = 0):
         # DB connection
         db_connection = mysql.Mysql()
 
@@ -24,7 +24,7 @@ class Handler:
         time_total = 2700
         time_half = 1
         play_type = 1
-        statistics = stats.Stats(teams[0], teams[1], match_type, debug_level, output_file)
+        statistics = stats.Stats(teams[0], teams[1], match_type, debug_level, output_file, categoryId)
 
         # Suspend Match if one of the teams in not enabled to play
         if (not teams[0].getEnabled() or not teams[1].getEnabled()):
@@ -460,5 +460,8 @@ class Handler:
             if teams[1].getId() > 26:
                 for player in teams[1].getPlayersList():
                     player.saveStatus(db_connection)
+
+            # Update scorers
+            statistics.saveScorers(db_connection)
 
         return statistics

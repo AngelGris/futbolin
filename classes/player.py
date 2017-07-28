@@ -98,6 +98,9 @@ class Player:
     def getHeading(self):
         return self._staminaEffect(self._heading)
 
+    def getId(self):
+        return self._id
+
     def getIndex(self):
         return self._index
 
@@ -135,7 +138,7 @@ class Player:
         return self._pos_def
 
     def getPrecision(self, goal):
-        return self._staminaEffect(self.getProbsToShoot(Helper.calculateDistance(self._pos_cur, goal)) * self._precision)
+        return self.getProbsToShoot(Helper.calculateDistance(self._pos_cur, goal)) * self._precision
 
     def getProbsToRun(self):
         return Helper.calculateDistance(self._pos_cur, self._pos_att) / Helper.calculateDistance(self._pos_def, self._pos_att)
