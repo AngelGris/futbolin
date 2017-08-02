@@ -9,13 +9,14 @@ class Player:
     _MAX_SPEED = 8.0 # Meters per second
     _MAX_STRENGTH = 50.0 # How long it can shoot (Meters)
 
-    def __init__(self, team, id, index, pos_def, pos_att, match_type, db_connection):
+    def __init__(self, team, id, index, pos_def, pos_att, max_stamina, match_type, db_connection):
         self._team = team
         self._id = id
         self._index = index
         self._pos_def = pos_def.copy()
         self._pos_att = pos_att.copy()
         self._pos_cur = pos_def.copy()
+        self._max_stamina = float(max_stamina)
         self._hasBall = False
 
         if(int(id) > 0):
@@ -63,14 +64,10 @@ class Player:
             self._stamina = 0
 
     def _staminaEffect(self, value):
-        rate = 1
+        rate = self._max_stamina
         break_point = 40
-        inflexion = 28
         if self._stamina < break_point:
-            if self._stamina < inflexion:
-                rate = (math.pow(self._stamina, 2) / inflexion) / break_point
-            else:
-                rate = (break_point - (math.pow(break_point - self._stamina, 2) / (break_point - inflexion))) / break_point
+            rate = self._max_stamina / (1 + math.pow(math.exp(1) / 2.2, (break_point / 2) - self._stamina))
 
         return max(1, int(value * rate))
 
@@ -193,7 +190,7 @@ class Player:
 
     def saveStatus(self, db_connection):
         experience = min(27, 7 + int(self._plays / 6))
-        db_connection.query("UPDATE `players` SET `experience` = `experience` + " + str(experience) + ", `stamina` = " + str(int(self._stamina)) + " WHERE `id` = " + str(self._id) + " LIMIT 1;", 0)
+        db_connection.query("UPDATE `players` SET `experience` = `experience` + " + str(experience) + ", `stamina` = `stamina` - FLOOR((`stamina` - " + str(int(self._stamina)) + ") * 0.75) WHERE `id` = " + str(self._id) + " LIMIT 1;", 0)
 
     def setHasBall(self, hasBall):
         self._hasBall = hasBall
