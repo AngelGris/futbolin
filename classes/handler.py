@@ -21,14 +21,15 @@ class Handler:
         field_size = Field.getSize()
         local_max_stamina = 1
         visit_max_stamina = 1
-        local_stamina = db_connection.query('SELECT AVG(`stamina`) AS `stamina` FROM `players` WHERE `team_id` = ' + str(local_id), 1)
-        visit_stamina = db_connection.query('SELECT AVG(`stamina`) AS `stamina` FROM `players` WHERE `team_id` = ' + str(visit_id), 1)
-        if local_stamina['stamina'] > visit_stamina['stamina']:
-            visit_max_stamina = visit_stamina['stamina'] / local_stamina['stamina']
-        elif visit_stamina['stamina'] > local_stamina['stamina']:
-            local_max_stamina = local_stamina['stamina'] / visit_stamina['stamina']
-        del local_stamina
-        del visit_stamina
+        if (match_type == 3):
+            local_stamina = db_connection.query('SELECT AVG(`stamina`) AS `stamina` FROM `players` WHERE `team_id` = ' + str(local_id), 1)
+            visit_stamina = db_connection.query('SELECT AVG(`stamina`) AS `stamina` FROM `players` WHERE `team_id` = ' + str(visit_id), 1)
+            if local_stamina['stamina'] > visit_stamina['stamina']:
+                visit_max_stamina = visit_stamina['stamina'] / local_stamina['stamina']
+            elif visit_stamina['stamina'] > local_stamina['stamina']:
+                local_max_stamina = local_stamina['stamina'] / visit_stamina['stamina']
+            del local_stamina
+            del visit_stamina
 
         teams = [team.Team(local_id, field_size, match_type, local_max_stamina, db_connection, True), team.Team(visit_id, field_size, match_type, visit_max_stamina, db_connection)]
 
