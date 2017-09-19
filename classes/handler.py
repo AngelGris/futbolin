@@ -22,8 +22,16 @@ class Handler:
         local_max_stamina = 1
         visit_max_stamina = 1
         if (match_type == 3):
-            local_stamina = db_connection.query('SELECT AVG(`stamina`) AS `stamina` FROM `players` WHERE `team_id` = ' + str(local_id), 1)
-            visit_stamina = db_connection.query('SELECT AVG(`stamina`) AS `stamina` FROM `players` WHERE `team_id` = ' + str(visit_id), 1)
+            if (local_id > 26):
+                local_stamina = db_connection.query('SELECT AVG(`stamina`) AS `stamina` FROM `players` WHERE `team_id` = ' + str(local_id), 1)
+            else:
+                local_stamina = {'stamina' : 100}
+
+            if (visit_id > 26):
+                visit_stamina = db_connection.query('SELECT AVG(`stamina`) AS `stamina` FROM `players` WHERE `team_id` = ' + str(visit_id), 1)
+            else:
+                visit_stamina = {'stamina' : 100}
+
             if local_stamina['stamina'] > visit_stamina['stamina']:
                 visit_max_stamina = visit_stamina['stamina'] / local_stamina['stamina']
             elif visit_stamina['stamina'] > local_stamina['stamina']:

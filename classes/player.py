@@ -40,6 +40,7 @@ class Player:
             self._strength = response['strength'] # Strength to shoot on goal from far
             self._tackling = response['tackling'] # Chances to get the ball when tackling
             self._condition = response['condition'] # Physical condition to know how much stamina is affected
+            self._stamina = 0
             if match_type < 3:
                 self._stamina = 100
             else:
