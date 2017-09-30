@@ -190,8 +190,9 @@ class Player:
         self.setPositioning([(proportion * (self._pos_att[0] - self._pos_def[0])) + self._pos_def[0], (proportion * (self._pos_att[1] - self._pos_def[1])) + self._pos_def[1]])
 
     def saveStatus(self, db_connection):
-        experience = min(27, 7 + int(self._plays / 6))
-        db_connection.query("UPDATE `players` SET `experience` = `experience` + " + str(experience) + ", `stamina` = `stamina` - FLOOR((`stamina` - " + str(int(self._stamina)) + ") * 0.75) WHERE `id` = " + str(self._id) + " LIMIT 1;", 0)
+        if (self._present):
+            experience = min(27, 7 + int(self._plays / 6))
+            db_connection.query("UPDATE `players` SET `experience` = `experience` + " + str(experience) + ", `stamina` = `stamina` - FLOOR((`stamina` - " + str(int(self._stamina)) + ") * 0.75) WHERE `id` = " + str(self._id) + " LIMIT 1;", 0)
 
     def setHasBall(self, hasBall):
         self._hasBall = hasBall
