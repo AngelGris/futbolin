@@ -62,6 +62,7 @@ class Handler:
 
         # Play the game!
         kickoff_team = random.randint(0,1)
+        kickoff_team = 0
         while(time_half <= 2):
             print('*** COMIENZO ' + ('PRIMER' if time_half == 1 else 'SEGUNDO') + ' TIEMPO ***')
             # Substitutions
@@ -157,7 +158,7 @@ class Handler:
                         # Shoot on goal
                         statistics.execShootOnGoal(possesion_team, teams[possesion_team].getPlayer(possesion_player))
                         time_update += statistics.increaseTime(time_step)
-                        probs = [teams[possesion_team].getPlayer(possesion_player).getPrecision(Field.getGoalPositioning(rival_team)), teams[rival_team].getPlayerAtPos(0).getGoalKeeping()]
+                        probs = [teams[possesion_team].getPlayer(possesion_player).getPrecision(Field.getGoalPositioning(rival_team)), teams[rival_team].getGoalkeeper().getGoalKeeping()]
                         total = probs[0] + probs[1]
                         probs[0] = int(probs[0] * 100 / total)
                         probs[1] = 100
@@ -166,27 +167,27 @@ class Handler:
                         if r < probs[0]:
                             # GOAL
                             statistics.execScore(possesion_team, teams[possesion_team].getPlayer(possesion_player))
-                            ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                            ball.setPlayer(teams[rival_team].getGoalkeeper())
                             time_update += statistics.increaseTime(time_step * 3)
                             play_type = 1
                         else:
                             # Goalkeeper defends
                             r = random.randint(0, 100)
-                            if (r < teams[rival_team].getPlayerAtPos(0).getGoalKeeping()):
+                            if (r < teams[rival_team].getGoalkeeper().getGoalKeeping()):
                                 # Goalkeeper keeps the ball
-                                statistics.execGoalkeeperDefence(rival_team, teams[rival_team].getPlayerAtPos(0))
-                                ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                                statistics.execGoalkeeperDefence(rival_team, teams[rival_team].getGoalkeeper())
+                                ball.setPlayer(teams[rival_team].getGoalkeeper())
                                 play_type = 0
                             else:
                                 # Corner kick
-                                statistics.execGoalkeeperDefenceToCorner(rival_team, teams[rival_team].getPlayerAtPos(0))
+                                statistics.execGoalkeeperDefenceToCorner(rival_team, teams[rival_team].getGoalkeeper())
                                 ball.setPlayer(teams[possesion_team].getPlayerCorner())
                                 play_type = 6
                             time_update += statistics.increaseTime(time_step)
                     else:
                         # Shoot away
                         statistics.execShootAway(possesion_team, teams[possesion_team].getPlayer(possesion_player))
-                        ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                        ball.setPlayer(teams[rival_team].getGoalkeeper())
                         time_update += statistics.increaseTime(time_step)
                         play_type = 5
                 elif play_type == 5:
@@ -195,7 +196,7 @@ class Handler:
                         teams[0].checkSubstitutions(statistics)
                         teams[1].checkSubstitutions(statistics)
 
-                        ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                        ball.setPlayer(teams[rival_team].getGoalkeeper())
 
                     # Goal kick
                     teams[0].resetPositionings(0.5)
@@ -207,7 +208,8 @@ class Handler:
                         ball.setPositioning([field_size[0] / 2, field_size[1] - 5.5])
 
                     time_update += statistics.increaseTime(time_step)
-                    statistics.execGoalKick(ball.getTeam(), teams[ball.getTeam()].getPlayerAtPos(0))
+
+                    statistics.execGoalKick(ball.getTeam(), teams[ball.getTeam()].getGoalkeeper())
                     time_update += statistics.increaseTime(time_step)
                     play_type = 3
                     time_update = time_step / 2
@@ -249,25 +251,25 @@ class Handler:
                         if (r < header_attacking[2]):
                             # Heading on target
                             statistics.execHeaderOnTarget(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
-                            r = random.randint(0, header_attacking[2] + teams[rival_team].getPlayerAtPos(0).getGoalKeeping())
+                            r = random.randint(0, header_attacking[2] + teams[rival_team].getGoalkeeper().getGoalKeeping())
 
                             if r < header_attacking[2]:
                                 # GOAL
                                 statistics.execScore(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
-                                ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                                ball.setPlayer(teams[rival_team].getGoalkeeper())
                                 time_update += statistics.increaseTime(time_step * 3)
                                 play_type = 1
                             else:
                                 # Goalkeeper defends
                                 r = random.randint(0, 100)
-                                if (r < teams[rival_team].getPlayerAtPos(0).getGoalKeeping()):
+                                if (r < teams[rival_team].getGoalkeeper().getGoalKeeping()):
                                     # Goalkeeper keeps the ball
-                                    statistics.execGoalkeeperDefence(rival_team, teams[rival_team].getPlayerAtPos(0))
-                                    ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                                    statistics.execGoalkeeperDefence(rival_team, teams[rival_team].getGoalkeeper())
+                                    ball.setPlayer(teams[rival_team].getGoalkeeper())
                                     play_type = 0
                                 else:
                                     # Corner kick
-                                    statistics.execGoalkeeperDefenceToCorner(rival_team, teams[rival_team].getPlayerAtPos(0))
+                                    statistics.execGoalkeeperDefenceToCorner(rival_team, teams[rival_team].getGoalkeeper())
                                     ball.setPlayer(teams[possesion_team].getPlayerCorner())
                                     play_type = 6
 
@@ -275,15 +277,15 @@ class Handler:
                         else:
                             # Heading out
                             statistics.execHeaderAway(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
-                            ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                            ball.setPlayer(teams[rival_team].getGoalkeeper())
                             time_update += statistics.increaseTime(time_step)
                             play_type = 5
                     else:
                         # Defending header
                         if (header_defending[0] == 0):
                             # Goalkeeper takes the ball
-                            statistics.execGoalkeeperCutsCrossing(rival_team, teams[rival_team].getPlayerAtPos(0))
-                            ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                            statistics.execGoalkeeperCutsCrossing(rival_team, teams[rival_team].getGoalkeeper())
+                            ball.setPlayer(teams[rival_team].getGoalkeeper())
                             time_update += statistics.increaseTime(time_step * 2)
                             play_type = 5
                         else:
@@ -297,8 +299,8 @@ class Handler:
                     closest_rival = teams[rival_team].getClosestPlayer(teams[possesion_team].getPlayer(possesion_player).getPositioning())
                     probs = [0, 0, 0] # 0 = dribbling, 1 = tackling, 2 = foul
                     probs[0] = teams[possesion_team].getPlayer(possesion_player).getDribbling()
-                    probs[1] = int(math.fabs(math.pow(teams[rival_team].getPlayer(closest_rival[0]).getTackling(), 2) / 100))
-                    probs[2] = teams[rival_team].getPlayer(closest_rival[0]).getTackling() - probs[1]
+                    probs[1] = int(teams[rival_team].getPlayer(closest_rival[0]).getTackling() * teams[rival_team].getPlayer(closest_rival[0]).getDefending() / 100)
+                    probs[2] = int((teams[rival_team].getPlayer(closest_rival[0]).getTackling() - probs[1]) / 5)
 
                     probs[1] += probs[0]
                     probs[2] += probs[1]
@@ -317,6 +319,13 @@ class Handler:
                     else:
                         # Foul
                         statistics.execFoul(possesion_team, teams[possesion_team].getPlayer(possesion_player), teams[rival_team].getPlayer(closest_rival[0]))
+
+                        # Injury
+                        p = random.randint(0, 100)
+                        prob = int((100 - teams[possesion_team].getPlayer(possesion_player).getStamina()) / 10)
+                        if (prob >= p):
+                            teams[possesion_team].playerInjured(statistics, possesion_player)
+
                         play_type = 8
 
                     time_update += statistics.increaseTime(time_step)
@@ -362,25 +371,25 @@ class Handler:
                             if (r < header_attacking[2]):
                                 # Heading on target
                                 statistics.execHeaderOnTarget(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
-                                r = random.randint(0, header_attacking[2] + teams[rival_team].getPlayerAtPos(0).getGoalKeeping())
+                                r = random.randint(0, header_attacking[2] + teams[rival_team].getGoalkeeper().getGoalKeeping())
 
                                 if r < header_attacking[2]:
                                     # GOAL
                                     statistics.execScore(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
-                                    ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                                    ball.setPlayer(teams[rival_team].getGoalkeeper())
                                     time_update += statistics.increaseTime(time_step * 3)
                                     play_type = 1
                                 else:
                                     # Goalkeeper defends
                                     r = random.randint(0, 100)
-                                    if (r < teams[rival_team].getPlayerAtPos(0).getGoalKeeping()):
+                                    if (r < teams[rival_team].getGoalkeeper().getGoalKeeping()):
                                         # Goalkeeper keeps the ball
-                                        statistics.execGoalkeeperDefence(rival_team, teams[rival_team].getPlayerAtPos(0))
-                                        ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                                        statistics.execGoalkeeperDefence(rival_team, teams[rival_team].getGoalkeeper())
+                                        ball.setPlayer(teams[rival_team].getGoalkeeper())
                                         play_type = 0
                                     else:
                                         # Corner kick
-                                        statistics.execGoalkeeperDefenceToCorner(rival_team, teams[rival_team].getPlayerAtPos(0))
+                                        statistics.execGoalkeeperDefenceToCorner(rival_team, teams[rival_team].getGoalkeeper())
                                         ball.setPlayer(teams[possesion_team].getPlayerCorner())
                                         play_type = 6
 
@@ -388,15 +397,15 @@ class Handler:
                             else:
                                 # Heading out
                                 statistics.execHeaderAway(possesion_team, teams[possesion_team].getPlayer(header_attacking[0]))
-                                ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                                ball.setPlayer(teams[rival_team].getGoalkeeper())
                                 time_update += statistics.increaseTime(time_step)
                                 play_type = 5
                         else:
                             # Defending header
                             if (header_defending[0] == 0):
                                 # Goalkeeper takes the ball
-                                statistics.execGoalkeeperCutsCrossing(rival_team, teams[rival_team].getPlayerAtPos(0))
-                                ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                                statistics.execGoalkeeperCutsCrossing(rival_team, teams[rival_team].getGoalkeeper())
+                                ball.setPlayer(teams[rival_team].getGoalkeeper())
                                 time_update += statistics.increaseTime(time_step * 2)
                                 play_type = 5
                             else:
@@ -412,7 +421,7 @@ class Handler:
                             # Shoot on goal
                             statistics.execFreekickOnGoal(possesion_team, teams[possesion_team].getPlayer(shooter[0]))
                             time_update += statistics.increaseTime(time_step)
-                            probs = [teams[possesion_team].getPlayer(shooter[0]).getPrecision(Field.getGoalPositioning(rival_team)), teams[rival_team].getPlayerAtPos(0).getGoalKeeping()]
+                            probs = [teams[possesion_team].getPlayer(shooter[0]).getPrecision(Field.getGoalPositioning(rival_team)), teams[rival_team].getGoalkeeper().getGoalKeeping()]
                             total = probs[0] + probs[1]
                             probs[0] = int(probs[0] * 100 / total)
                             probs[1] = 100
@@ -421,27 +430,27 @@ class Handler:
                             if r < probs[0]:
                                 # GOAL
                                 statistics.execFreekickScore(possesion_team, teams[possesion_team].getPlayer(possesion_player))
-                                ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                                ball.setPlayer(teams[rival_team].getGoalkeeper())
                                 time_update += statistics.increaseTime(time_step * 3)
                                 play_type = 1
                             else:
                                 # Goalkeeper defends
                                 r = random.randint(0, 100)
-                                if (r < teams[rival_team].getPlayerAtPos(0).getGoalKeeping()):
+                                if (r < teams[rival_team].getGoalkeeper().getGoalKeeping()):
                                     # Goalkeeper keeps the ball
-                                    statistics.execGoalkeeperDefence(rival_team, teams[rival_team].getPlayerAtPos(0))
-                                    ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                                    statistics.execGoalkeeperDefence(rival_team, teams[rival_team].getGoalkeeper())
+                                    ball.setPlayer(teams[rival_team].getGoalkeeper())
                                     play_type = 0
                                 else:
                                     # Corner kick
-                                    statistics.execGoalkeeperDefenceToCorner(rival_team, teams[rival_team].getPlayerAtPos(0))
+                                    statistics.execGoalkeeperDefenceToCorner(rival_team, teams[rival_team].getGoalkeeper())
                                     ball.setPlayer(teams[possesion_team].getPlayerCorner())
                                     play_type = 6
                                 time_update += statistics.increaseTime(time_step)
                         else:
                             # Shoot away
                             statistics.execShootAway(possesion_team, teams[possesion_team].getPlayer(possesion_player))
-                            ball.setPlayer(teams[rival_team].getPlayerAtPos(0))
+                            ball.setPlayer(teams[rival_team].getGoalkeeper())
                             time_update += statistics.increaseTime(time_step)
                             play_type = 5
 

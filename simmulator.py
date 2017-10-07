@@ -49,6 +49,7 @@ games_closed = 0
 goals_total = [0, 0]
 shots_total = [[0,0],[0,0]]
 substitutions_total = 0
+injuries_total = 0
 results = [0, 0, 0]
 
 while True:
@@ -73,6 +74,10 @@ while True:
     substitutions_total += substitutions[0]
     substitutions_total += substitutions[1]
 
+    injuries = statistics.getInjuries()
+    injuries_total += injuries[0]
+    injuries_total += injuries[1]
+
     games_count += 1
     goals_total[0] += goals[0]
     goals_total[1] += goals[1]
@@ -88,3 +93,4 @@ while True:
     print('Disparos total:', str(total_shots[0]), '(', str(total_shots[1]), ')')
     print('Disparos por partido:', '{:05.2f}'.format(total_shots[0] / games_count), '(', '{:05.2f}'.format(total_shots[1] / games_count), ')')
     print('Cambios por partido:', '{:05.2f}'.format(substitutions_total / games_count))
+    print('Lesiones por partido:', '{:05.2f}'.format(injuries_total / games_count))

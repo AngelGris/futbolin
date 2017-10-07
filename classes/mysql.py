@@ -24,8 +24,12 @@ class Mysql:
         r = self._mysql_connection.store_result()
 
         if results == 1:
-            r = r.fetch_row(1, 1)
-            return r[0]
+            try:
+                r = r.fetch_row(1, 1)
+                return r[0]
+            except IndexError:
+                return False
+
         elif results > 1:
             return r.fetch_row(results, 1)
         else:

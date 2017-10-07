@@ -73,9 +73,10 @@ class Team:
 
         self._startingFormation = []
         for index in self._players_in_field:
-            self._startingFormation.append(self._players[index])
+            if self._players[index].isPresent():
+                self._startingFormation.append(self._players[index])
         for player in self._players:
-            if player.getIndex() not in self._players_in_field:
+            if player.getIndex() and player.isPresent() not in self._players_in_field:
                 self._startingFormation.append(player)
 
         Team.count += 1
@@ -86,22 +87,37 @@ class Team:
             output += str(player) + '\n'
         return output
 
-    def checkSubstitutions(self, stats):
+    def checkSubstitutions(self, stats, player_out = False, Injured = False):
+        players_out = []
+        output = []
         if self._substitutions_count > 0:
-            for i in range(len(self._players_in_field)):
-                player = self._players[self._players_in_field[i]]
-                if (player.isChangeable()):
-                    player_out = player
-                    for player in self._players:
-                        if player.isActive() and player.getIndex() not in self._players_in_field:
-                            player_in = player
-                            if player_out.getPosition() == player_in.getPosition():
-                                break
-                    self.substitution(i, player_in.getIndex(), stats)
+            if (player_out):
+                players_out = [player_out]
+            else:
+                for i in self._players_in_field:
+                    player = self._players[i]
+                    if (player.isActive() and player.isChangeable()):
+                        players_out.append(player)
+
+            for player_out in players_out:
+                pos = self.getPlayerPosition(player_out.getIndex())
+
+                player_in = False
+                for player in self._players:
+                    if player.isActive() and player.getIndex() not in self._players_in_field:
+                        player_in = player
+                        if player_out.getPosition() == player_in.getPosition():
+                            break
+
+                if (player_in):
+                    output.append(player_in)
+                    self.substitution(pos, player_in.getIndex(), stats, Injured)
+
+        return output
 
     def getClosestPlayer(self, positioning, exclude = -1):
-        distance_min = 120
-        player = 0
+        distance_min = 200
+        player = -1
         for x in self._players_in_field:
             if (exclude != x and self._players[x].isActive()):
                 distance = Helper.calculateDistance(positioning, self._players[x].getPositioning())
@@ -143,10 +159,20 @@ class Team:
 
         return output
 
+    def getGoalkeeper(self):
+        pos = 0
+        while (not self._players[self._players_in_field[pos]].isActive()):
+            pos += 1
+
+        return self.getPlayerAtPos(pos)
+
     def getHeadingPlayer(self, ball, goalkeeper = True):
         probs = [0 for x in range(len(self._players_in_field))]
         if goalkeeper:
-            probs[0] = self._players[self._players_in_field[0]].getJumping()
+            if (self._players[self._players_in_field[0]].isActive()):
+                probs[0] = self._players[self._players_in_field[0]].getJumping()
+            else:
+                probs[0] = 0
 
         for x in range(1,len(self._players_in_field)):
             player = self._players[x]
@@ -164,7 +190,7 @@ class Team:
             total += probs[x]
             probs[x] = total
 
-        r = random.randint(0, total)
+        r = random.randint(1, total)
         s = 0
         while(probs[s] < r):
             s += 1
@@ -214,27 +240,26 @@ class Team:
     def getPass(self, pos, forward = False):
         total = len(self._players_in_field)
         distances = [0 for x in range(total)]
-        distance_max = 0
+        distance_max = 200
         location = self._players[pos].getPositioning()
+
+        distances = [200 for x in range(total)]
         for x in range(total):
-            if(self._players_in_field[x] != pos):
+            if(self._players[self._players_in_field[x]].isActive() and self._players_in_field[x] != pos):
                 destination = self._players[self._players_in_field[x]].getPositioning()
                 distance = int(Helper.calculateDistance(location, destination))
                 if (forward and ((self._index == 0 and location[1] < destination[1]) or (self._index == 1 and location[1] > destination[1]))):
                     distance = int(distance / 2)
 
-                distances[x] = distance
-                if(distance > distance_max):
-                    distance_max = distance
+                distances[x] =  distance
 
-        distances[self._players_in_field.index(pos)] = distance_max
         probs = [0 for x in range(total)]
         prob_total = 0
         for x in range(total):
             prob_total += distance_max - distances[x]
             probs[x] = prob_total
 
-        r = random.randint(0, prob_total)
+        r = random.randint(1, prob_total)
         s = 0
         while(probs[s] < r):
             s += 1
@@ -255,6 +280,13 @@ class Team:
             index = self._players_in_field[0]
 
         return self._players[index]
+
+    def getPlayerPosition(self, player):
+        position = 0
+        while (not self._players[self._players_in_field[position]].isActive() or player != self._players[self._players_in_field[position]].getIndex()):
+            position += 1
+
+        return position
 
     def getPlayersList(self):
         return self._players
@@ -291,6 +323,13 @@ class Team:
 
         return output
 
+    def playerInjured(self, stats, index):
+        player_in = self.checkSubstitutions(stats, self._players[index], True)
+        if (len(player_in) == 0):
+            player = self._players[index]
+            stats.execInjury(self._index, player)
+            player.deactivate(True)
+
     def playerString(self, pos):
         return str(self._players[pos])
 
@@ -326,7 +365,7 @@ class Team:
 
             print(row)
 
-    def substitution(self, position, index_in, stats = False):
+    def substitution(self, position, index_in, stats = False, Injured = False):
         if self._substitutions_count > 0:
             player_out =  self._players[self._players_in_field[position]]
             self._players[index_in].substitution(player_out.getPositioningDef(), player_out.getPositioningAtt())
@@ -335,7 +374,10 @@ class Team:
 
             if stats:
                 self._substitutions_count -= 1
-                stats.execSubstitution(self._index, player_out, self._players[index_in])
+                if Injured:
+                    stats.execSubstitutionInjury(self._index, player_out, self._players[index_in])
+                else:
+                    stats.execSubstitution(self._index, player_out, self._players[index_in])
 
 
     def updatePositionings(self, field, ball, seconds):

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import random
 import math
 from classes.helper import Helper
 
@@ -20,34 +21,39 @@ class Player:
         self._hasBall = False
 
         if(int(id) > 0):
-            response = db_connection.query("SELECT * FROM `players` WHERE `id` = " + str(id) + " LIMIT 1;", 1)
-            self._number = response['number']
-            self._name = response['first_name'] + " " + response['last_name']
-            self._position = response['position']
-            names = response['first_name'].split();
-            initials = '';
-            for name in names:
-                initials += name[0] + '. '
-            self._short_name = initials + response['last_name']
-            self._defending = response['defending'] # Chances to intercept a pass
-            self._dribbling = response['dribbling'] # Ability to avoid a rival
-            self._goalkeeping = response['goalkeeping'] # Ability while goalkeeping
-            self._heading = response['heading'] # Heading on goal ability
-            self._jumping = response['jumping'] # Ability to jump looking to head the ball
-            self._passing = response['passing'] # Ability to make good passes
-            self._precision = response['precision'] # Precision when shooting on goal
-            self._speed = response['speed'] # Speed
-            self._strength = response['strength'] # Strength to shoot on goal from far
-            self._tackling = response['tackling'] # Chances to get the ball when tackling
-            self._condition = response['condition'] # Physical condition to know how much stamina is affected
-            self._stamina = 0
-            if match_type < 3:
-                self._stamina = 100
-            else:
-                self._stamina = response['stamina'] # Remaining stamina
+            response = db_connection.query("SELECT * FROM `players` WHERE `id` = " + str(id) + " AND `recovery` = 0 LIMIT 1;", 1)
+            if (response):
+                self._number = response['number']
+                self._name = response['first_name'] + " " + response['last_name']
+                self._position = response['position']
+                names = response['first_name'].split();
+                initials = '';
+                for name in names:
+                    initials += name[0] + '. '
+                self._short_name = initials + response['last_name']
+                self._defending = response['defending'] # Chances to intercept a pass
+                self._dribbling = response['dribbling'] # Ability to avoid a rival
+                self._goalkeeping = response['goalkeeping'] # Ability while goalkeeping
+                self._heading = response['heading'] # Heading on goal ability
+                self._jumping = response['jumping'] # Ability to jump looking to head the ball
+                self._passing = response['passing'] # Ability to make good passes
+                self._precision = response['precision'] # Precision when shooting on goal
+                self._speed = response['speed'] # Speed
+                self._strength = response['strength'] # Strength to shoot on goal from far
+                self._tackling = response['tackling'] # Chances to get the ball when tackling
+                self._condition = response['condition'] # Physical condition to know how much stamina is affected
+                self._stamina = 0
+                if match_type < 3:
+                    self._stamina = 100
+                else:
+                    self._stamina = response['stamina'] # Remaining stamina
 
-            self._active = True
-            self._present = True
+                self._injured = False
+                self._active = True
+                self._present = True
+            else:
+                self._active = False
+                self._present = False
         else:
             self._active = False
             self._present = False
@@ -72,7 +78,8 @@ class Player:
 
         return max(1, int(value * rate))
 
-    def deactivate(self):
+    def deactivate(self, injured = False):
+        self._injured = injured
         self._active = False
 
     def getCondition(self):
@@ -192,7 +199,30 @@ class Player:
     def saveStatus(self, db_connection):
         if (self._present):
             experience = min(27, 7 + int(self._plays / 6))
-            db_connection.query("UPDATE `players` SET `experience` = `experience` + " + str(experience) + ", `stamina` = `stamina` - FLOOR((`stamina` - " + str(int(self._stamina)) + ") * 0.75) WHERE `id` = " + str(self._id) + " LIMIT 1;", 0)
+            injury = 0
+            recovery = 0
+            if (self._injured):
+                # Select type of injury
+                print('lesionado')
+                injuries = db_connection.query("SELECT `id`, `recovery`, `chance` FROM `injuries` ORDER BY `chance`;", 100)
+
+                probs = {}
+                total = 0
+                for inj in injuries:
+                    total += int(inj['chance'] * 100)
+                    probs[inj['id']] = {'prob' : total, 'recovery' : inj['recovery']}
+
+                r = random.randint(0, total)
+                s = 1
+                while(probs[s]['prob'] < r):
+                    s += 1
+
+                injury = s
+                recovery = probs[s]['recovery']
+
+                db_connection.query("UPDATE `players` SET `injury_id` = " + str(injury) + ", `recovery` = " + str(recovery + 1) + ", `experience` = `experience` + " + str(experience) + ", `stamina` = `stamina` - FLOOR((`stamina` - " + str(int(self._stamina)) + ") * 0.75) WHERE `id` = " + str(self._id) + " LIMIT 1;", 0)
+            else:
+                db_connection.query("UPDATE `players` SET `experience` = `experience` + " + str(experience) + ", `stamina` = `stamina` - FLOOR((`stamina` - " + str(int(self._stamina)) + ") * 0.75) WHERE `id` = " + str(self._id) + " LIMIT 1;", 0)
 
     def setHasBall(self, hasBall):
         self._hasBall = hasBall

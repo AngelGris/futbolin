@@ -25,6 +25,7 @@ class Stats:
         self._shots = [[0, 0], [0, 0]]
         self._scorers = []
         self._substitutions = [0, 0]
+        self._injuries = [0, 0]
 
     def __str__ (self):
         self._possesionPerc = [0, 0]
@@ -40,6 +41,7 @@ class Stats:
             output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Posesión %:', '{:05.2f}%'.format(self._possesionPerc[0]), '{:05.2f}%'.format(self._possesionPerc[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
             output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Disparos:', str(self._shots[0][0]) + ' (' + str(self._shots[0][1]) + ')', str(self._shots[1][0]) + ' (' + str(self._shots[1][1]) + ')', width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
             output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Cambios:', str(self._substitutions[0]), str(self._substitutions[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
+            output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Lesiones:', str(self._injuries[0]), str(self._injuries[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
         else:
             output = ''
         return output
@@ -74,6 +76,7 @@ class Stats:
         # 20 = Ball stolen
         # 21 = Match suspended
         # 22 = Substitution
+        # 23 = Player injured
         if self._outputFile == '':
             if self._debugLevel == 3:
                 input(self.getFormattedTime() + ' - ' + description)
@@ -147,6 +150,10 @@ class Stats:
         self._shots[team][1] += 1
         self._printAction(0, team, 12, str(player) + ' cabecea al arco...')
 
+    def execInjury(self, team, player):
+        self._injuries[team] += 1
+        self._printAction(0, team, 23, str(player) + ' se retira lesionado y no pueden hacer más cambios')
+
     def execInterception(self, team, player1, player2):
         player1.increasePlay()
         player2.increasePlay()
@@ -189,6 +196,11 @@ class Stats:
         self._substitutions[team] += 1
         self._printAction(0, team, 22, 'Sale ' + str(player_out) + ' y entra ' + str(player_in))
 
+    def execSubstitutionInjury(self, team, player_out, player_in):
+        self._substitutions[team] += 1
+        self._injuries[team] += 1
+        self._printAction(0, team, 23, str(player_out) + ' se retira lesionado y entra ' + str(player_in))
+
     def execSuspendMatch(self, team):
         if (team is not None):
             self._goals[team] = 2
@@ -211,6 +223,9 @@ class Stats:
 
     def getGoals(self):
         return self._goals
+
+    def getInjuries(self):
+        return self._injuries
 
     def getShots(self):
         return self._shots
