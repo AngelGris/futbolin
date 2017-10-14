@@ -12,7 +12,7 @@ from classes.field import Field
 from classes.helper import Helper
 
 class Handler:
-    def execute(local_id, visit_id, match_type, debug_level, output_file = '', categoryId = 0):
+    def execute(local_id, visit_id, match_type, debug_level, output_file = '', category_id = 0):
         # DB connection
         db_connection = mysql.Mysql()
 
@@ -39,12 +39,12 @@ class Handler:
             del local_stamina
             del visit_stamina
 
-        teams = [team.Team(local_id, field_size, match_type, local_max_stamina, db_connection, True), team.Team(visit_id, field_size, match_type, visit_max_stamina, db_connection)]
+        teams = [team.Team(local_id, field_size, match_type, local_max_stamina, category_id, db_connection, True), team.Team(visit_id, field_size, match_type, visit_max_stamina, category_id, db_connection)]
 
         time_total = 2700
         time_half = 1
         play_type = 1
-        statistics = stats.Stats(teams[0], teams[1], match_type, debug_level, output_file, categoryId)
+        statistics = stats.Stats(teams[0], teams[1], match_type, debug_level, output_file, category_id)
 
         # Suspend Match if one of the teams in not enabled to play
         if (not teams[0].getEnabled() or not teams[1].getEnabled()):
@@ -326,6 +326,13 @@ class Handler:
                         if (prob >= p):
                             teams[possesion_team].playerInjured(statistics, possesion_player)
 
+                        # Card
+                        p = random.randint(0, 100)
+                        if (p == 0):
+                            teams[rival_team].redCard(statistics, closest_rival[0])
+                        elif(p <= 20):
+                            teams[rival_team].yellowCard(statistics, closest_rival[0])
+
                         play_type = 8
 
                     time_update += statistics.increaseTime(time_step)
@@ -484,11 +491,11 @@ class Handler:
             # Increase player's experience
             if teams[0].getId() > 26:
                 for player in teams[0].getPlayersList():
-                    player.saveStatus(db_connection)
+                    player.saveStatus(db_connection, category_id)
 
             if teams[1].getId() > 26:
                 for player in teams[1].getPlayersList():
-                    player.saveStatus(db_connection)
+                    player.saveStatus(db_connection, category_id)
 
             # Update scorers
             statistics.saveScorers(db_connection)

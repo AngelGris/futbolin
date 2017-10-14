@@ -11,7 +11,7 @@ class Team:
     count = 0
     _enabled = False
 
-    def __init__(self, id, field, match_type, max_stamina, db_connection, reset_counter = False):
+    def __init__(self, id, field, match_type, max_stamina, category_id, db_connection, reset_counter = False):
         self._db_connection = db_connection
         result = self._db_connection.query("SELECT `teams`.`name`, `teams`.`short_name`, `teams`.`stadium_name`, `teams`.`formation`, `strategies`.`j01_start_x`, `strategies`.`j01_start_y`, `strategies`.`j01_end_x`, `strategies`.`j01_end_y`, `strategies`.`j02_start_x`, `strategies`.`j02_start_y`, `strategies`.`j02_end_x`, `strategies`.`j02_end_y`, `strategies`.`j03_start_x`, `strategies`.`j03_start_y`, `strategies`.`j03_end_x`, `strategies`.`j03_end_y`, `strategies`.`j04_start_x`, `strategies`.`j04_start_y`, `strategies`.`j04_end_x`, `strategies`.`j04_end_y`, `strategies`.`j05_start_x`, `strategies`.`j05_start_y`, `strategies`.`j05_end_x`, `strategies`.`j05_end_y`, `strategies`.`j06_start_x`, `strategies`.`j06_start_y`, `strategies`.`j06_end_x`, `strategies`.`j06_end_y`, `strategies`.`j07_start_x`, `strategies`.`j07_start_y`, `strategies`.`j07_end_x`, `strategies`.`j07_end_y`, `strategies`.`j08_start_x`, `strategies`.`j08_start_y`, `strategies`.`j08_end_x`, `strategies`.`j08_end_y`, `strategies`.`j09_start_x`, `strategies`.`j09_start_y`, `strategies`.`j09_end_x`, `strategies`.`j09_end_y`, `strategies`.`j10_start_x`, `strategies`.`j10_start_y`, `strategies`.`j10_end_x`, `strategies`.`j10_end_y`, `strategies`.`j11_start_x`, `strategies`.`j11_start_y`, `strategies`.`j11_end_x`, `strategies`.`j11_end_y` FROM `teams` INNER JOIN `strategies` ON `strategies`.`id` = `teams`.`strategy_id` WHERE `teams`.`id` = " + str(id) + " LIMIT 1", 1)
         self._id = id
@@ -46,7 +46,7 @@ class Team:
                 else:
                     positioning = [[0,0], [0,0]]
 
-                self._players.append(Player.Player(self._index, pid, count, [positioning[0][0], positioning[0][1]], [positioning[1][0], positioning[1][1]], max_stamina, match_type, db_connection))
+                self._players.append(Player.Player(self._index, pid, count, [positioning[0][0], positioning[0][1]], [positioning[1][0], positioning[1][1]], max_stamina, match_type, category_id, db_connection))
 
                 if count < 11:
                     self._players_in_field.append(count)
@@ -333,6 +333,11 @@ class Team:
     def playerString(self, pos):
         return str(self._players[pos])
 
+    def redCard(self, stats, index):
+        player = self._players[index]
+        player.redCard()
+        stats.execRedCard(self._index, player)
+
     def reset(self):
         self._substitutions_count = 3
 
@@ -390,3 +395,11 @@ class Team:
         portion = positioning[1] / field[1]
         for x in self._players_in_field:
             self._players[x].updatePositioning(portion, seconds)
+
+    def yellowCard(self, stats, index):
+        player = self._players[index]
+
+        if (player.yellowCard()):
+            stats.execFirstYellowCard(self._index, player)
+        else:
+            stats.execSecondYellowCard(self._index, player)

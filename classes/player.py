@@ -10,7 +10,7 @@ class Player:
     _MAX_SPEED = 8.0 # Meters per second
     _MAX_STRENGTH = 50.0 # How long it can shoot (Meters)
 
-    def __init__(self, team, id, index, pos_def, pos_att, max_stamina, match_type, db_connection):
+    def __init__(self, team, id, index, pos_def, pos_att, max_stamina, match_type, category_id, db_connection):
         self._team = team
         self._id = id
         self._index = index
@@ -21,7 +21,11 @@ class Player:
         self._hasBall = False
 
         if(int(id) > 0):
-            response = db_connection.query("SELECT * FROM `players` WHERE `id` = " + str(id) + " AND `recovery` = 0 LIMIT 1;", 1)
+            if (match_type < 3):
+                response = db_connection.query("SELECT * FROM `players` WHERE `id` = " + str(id) + " AND `recovery` = 0 LIMIT 1;", 1)
+            else:
+                response = db_connection.query("SELECT * FROM `players` WHERE `id` = " + str(id) + " AND `id` NOT IN (SELECT `player_id` FROM `player_cards` WHERE `category_id` = " + str(category_id) + " AND `suspension` > 0) AND `recovery` = 0 LIMIT 1;", 1)
+
             if (response):
                 self._number = response['number']
                 self._name = response['first_name'] + " " + response['last_name']
@@ -49,6 +53,7 @@ class Player:
                     self._stamina = response['stamina'] # Remaining stamina
 
                 self._injured = False
+                self._cards = [0, 0]
                 self._active = True
                 self._present = True
             else:
@@ -193,10 +198,15 @@ class Player:
     def isPresent(self):
         return self._present
 
+    def redCard(self):
+        self._cards[1] = 1
+        self._active = False
+        return False
+
     def resetPositioning(self, proportion = 0):
         self.setPositioning([(proportion * (self._pos_att[0] - self._pos_def[0])) + self._pos_def[0], (proportion * (self._pos_att[1] - self._pos_def[1])) + self._pos_def[1]])
 
-    def saveStatus(self, db_connection):
+    def saveStatus(self, db_connection, category_id):
         if (self._present):
             experience = min(27, 7 + int(self._plays / 6))
             injury = 0
@@ -223,6 +233,21 @@ class Player:
                 db_connection.query("UPDATE `players` SET `injury_id` = " + str(injury) + ", `recovery` = " + str(recovery + 1) + ", `experience` = `experience` + " + str(experience) + ", `stamina` = `stamina` - FLOOR((`stamina` - " + str(int(self._stamina)) + ") * 0.75) WHERE `id` = " + str(self._id) + " LIMIT 1;", 0)
             else:
                 db_connection.query("UPDATE `players` SET `experience` = `experience` + " + str(experience) + ", `stamina` = `stamina` - FLOOR((`stamina` - " + str(int(self._stamina)) + ") * 0.75) WHERE `id` = " + str(self._id) + " LIMIT 1;", 0)
+
+            cards = 0
+            suspension = 0
+            if (self._cards[1] == 1):
+                suspension = 3
+                cards = self._cards[0]
+            elif (self._cards[0] == 2):
+                suspension = 2
+            elif (self._cards[0] == 1):
+                cards = 1
+
+            if (suspension > 0):
+                db_connection.query('INSERT INTO `player_cards` (`player_id`, `category_id`, `cards`, `suspension_id`, `suspension`) VALUES (' + str(self._id) + ', ' + str(category_id) + ', ' + str(cards) + ', 2, ' + str(suspension) + ') ON DUPLICATE KEY UPDATE `cards` = `cards` + ' + str(cards) + ', `suspension_id` = 2, `suspension` = ' + str(suspension), 0)
+            elif (cards > 0):
+                db_connection.query('INSERT INTO `player_cards` (`player_id`, `category_id`, `cards`) VALUES (' + str(self._id) + ', ' + str(category_id) + ', ' + str(cards) + ') ON DUPLICATE KEY UPDATE `cards` = `cards` + ' + str(cards), 0)
 
     def setHasBall(self, hasBall):
         self._hasBall = hasBall
@@ -256,3 +281,9 @@ class Player:
                 self._reduceStamina(distance * self.getCondition())
                 self._distance += distance
                 self._pos_cur = destination
+
+    def yellowCard(self):
+        self._cards[0] += 1
+        if (self._cards[0] == 2):
+            self._active = False
+        return self._active

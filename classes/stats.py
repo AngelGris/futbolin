@@ -25,6 +25,8 @@ class Stats:
         self._shots = [[0, 0], [0, 0]]
         self._scorers = []
         self._substitutions = [0, 0]
+        self._fouls = [0, 0]
+        self._cards = [[0, 0], [0, 0]]
         self._injuries = [0, 0]
 
     def __str__ (self):
@@ -41,6 +43,8 @@ class Stats:
             output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Posesión %:', '{:05.2f}%'.format(self._possesionPerc[0]), '{:05.2f}%'.format(self._possesionPerc[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
             output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Disparos:', str(self._shots[0][0]) + ' (' + str(self._shots[0][1]) + ')', str(self._shots[1][0]) + ' (' + str(self._shots[1][1]) + ')', width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
             output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Cambios:', str(self._substitutions[0]), str(self._substitutions[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
+            output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Faltas:', str(self._fouls[0]), str(self._fouls[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
+            output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Tarjetas:', str(self._cards[0][0]) + ' / ' + str(self._cards[0][1]), str(self._cards[1][0]) + ' / ' + str(self._cards[1][1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
             output += '{:<{width1}} {:>{width2}} {:>{width3}}'.format('Lesiones:', str(self._injuries[0]), str(self._injuries[1]), width1=cols[0], width2=cols[1], width3=cols[2]) + '\n'
         else:
             output = ''
@@ -77,6 +81,9 @@ class Stats:
         # 21 = Match suspended
         # 22 = Substitution
         # 23 = Player injured
+        # 24 = First yellow card
+        # 25 = Second yellow card
+        # 26 = Red card
         if self._outputFile == '':
             if self._debugLevel == 3:
                 input(self.getFormattedTime() + ' - ' + description)
@@ -105,9 +112,14 @@ class Stats:
         player2.increasePlay()
         self._printAction(2, team, 3, str(player1) + ' escapa de la marca de ' + str(player2))
 
+    def execFirstYellowCard(self, team, player):
+        self._cards[team][0] += 1
+        self._printAction(0, team, 24, str(player) + ' recibe una tarjeta amarilla')
+
     def execFoul(self, team, player1, player2):
         player1.increasePlay()
         player2.increasePlay()
+        self._fouls[(team + 1) % 2] += 1
         self._printAction(1, team, 4, str(player2) + ' le hace falta a ' + str(player1))
 
     def execFreekickOnGoal(self, team, player):
@@ -171,9 +183,18 @@ class Stats:
         player2.increasePlay()
         self._printAction(2, team, 15, str(player1) + ' pasa la pelota a ' + str(player2))
 
+    def execRedCard(self, team, player):
+        self._cards[team][1] += 1
+        self._printAction(0, team, 26, 'Roja directa para ' + str(player) + ' que se va a las duchas')
+
     def execRun(self, team, player):
         player.increasePlay()
         self._printAction(2, team, 16, str(player) + ' corre con la pelota')
+
+    def execSecondYellowCard(self, team, player):
+        self._cards[team][0] += 1
+        self._cards[team][1] += 1
+        self._printAction(0, team, 25, str(player) + ' recibe otra amarilla y se va expulsado')
 
     def execScore(self, team, player):
         player.increasePlay()
@@ -218,8 +239,14 @@ class Stats:
     def formatTime(time):
         return "%02d:%02d" % (int(time / 60), int(time % 60))
 
+    def getCards(self):
+        return self._cards
+
     def getFormattedTime(self):
         return Stats.formatTime(self._time)
+
+    def getFouls(self):
+        return self._fouls
 
     def getGoals(self):
         return self._goals
@@ -272,6 +299,8 @@ class Stats:
                 'shotsOnTarget' : self._shots[0][1],
                 'formation' : self._local.getStartingFormation(),
                 'substitutions' : self._substitutions[0],
+                'yellow_cards' : self._cards[0][0],
+                'red_cards' : self._cards[0][1]
             },
             'visit' : {
                 'id' : self._visit.getId(),
@@ -282,6 +311,8 @@ class Stats:
                 'shotsOnTarget' : self._shots[1][1],
                 'formation' : self._visit.getStartingFormation(),
                 'substitutions' : self._substitutions[1],
+                'yellow_cards' : self._cards[1][0],
+                'red_cards' : self._cards[1][1]
             },
             'plays' : self._output,
             'scorers' : self._scorers,

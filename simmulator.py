@@ -49,6 +49,8 @@ games_closed = 0
 goals_total = [0, 0]
 shots_total = [[0,0],[0,0]]
 substitutions_total = 0
+fouls_total = 0
+cards_total = [0, 0]
 injuries_total = 0
 results = [0, 0, 0]
 
@@ -71,12 +73,17 @@ while True:
     total_shots = [shots_total[0][0] + shots_total[1][0], shots_total[0][1] + shots_total[1][1]]
 
     substitutions = statistics.getSubstitutions()
-    substitutions_total += substitutions[0]
-    substitutions_total += substitutions[1]
+    substitutions_total += substitutions[0] + substitutions[1]
+
+    fouls = statistics.getFouls()
+    fouls_total += fouls[0] + fouls[1]
+
+    cards = statistics.getCards()
+    cards_total[0] += cards[0][0] + cards[1][0]
+    cards_total[1] += cards[0][1] + cards[1][1]
 
     injuries = statistics.getInjuries()
-    injuries_total += injuries[0]
-    injuries_total += injuries[1]
+    injuries_total += injuries[0] + injuries[1]
 
     games_count += 1
     goals_total[0] += goals[0]
@@ -93,4 +100,6 @@ while True:
     print('Disparos total:', str(total_shots[0]), '(', str(total_shots[1]), ')')
     print('Disparos por partido:', '{:05.2f}'.format(total_shots[0] / games_count), '(', '{:05.2f}'.format(total_shots[1] / games_count), ')')
     print('Cambios por partido:', '{:05.2f}'.format(substitutions_total / games_count))
+    print('Faltas por partido:', '{:05.2f}'.format(fouls_total / games_count))
+    print('Tarjetas por partidos', '{:05.2f}'.format(cards_total[0] / games_count) + ' / ' + '{:05.2f}'.format(cards_total[1] / games_count))
     print('Lesiones por partido:', '{:05.2f}'.format(injuries_total / games_count))
