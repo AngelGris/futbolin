@@ -192,7 +192,6 @@ class Stats:
         self._printAction(2, team, 16, str(player) + ' corre con la pelota')
 
     def execSecondYellowCard(self, team, player):
-        self._cards[team][0] += 1
         self._cards[team][1] += 1
         self._printAction(0, team, 25, str(player) + ' recibe otra amarilla y se va expulsado')
 
