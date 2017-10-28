@@ -76,7 +76,7 @@ class Team:
             if self._players[index].isPresent():
                 self._startingFormation.append(self._players[index])
         for player in self._players:
-            if player.getIndex() and player.isPresent() not in self._players_in_field:
+            if (player.getIndex() not in self._players_in_field) and player.isPresent():
                 self._startingFormation.append(player)
 
         Team.count += 1
