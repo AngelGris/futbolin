@@ -375,7 +375,7 @@ class Team:
             player_out =  self._players[self._players_in_field[position]]
             self._players[index_in].substitution(player_out.getPositioningDef(), player_out.getPositioningAtt())
             self._players_in_field[position] = index_in
-            player_out.deactivate()
+            player_out.deactivate(Injured)
 
             if stats:
                 self._substitutions_count -= 1
