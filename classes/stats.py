@@ -282,7 +282,7 @@ class Stats:
         for player in scorers[1]:
             db_connection.query('INSERT INTO `scorers` (`team_id`, `player_id`, `category_id`, `goals`) VALUES (' + str(self._visit.getId()) + ', ' + str(player) + ', ' + str(self._categoryId) + ', ' + str(scorers[1][player]) + ') ON DUPLICATE KEY UPDATE `goals` = `goals` + ' + str(scorers[1][player]), 0)
 
-    def writeOutput(self, db_connection):
+    def writeOutput(self, db_connection, extras = {}):
         matchTime = int(time.time())
         matchDateTime = datetime.datetime.fromtimestamp(matchTime).strftime('%Y-%m-%d %H:%M:%S')
 
@@ -316,6 +316,7 @@ class Stats:
             'plays' : self._output,
             'scorers' : self._scorers,
         }
+        output.update(extras)
         with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'logs/') + self._outputFile, 'a') as out:
             out.write(json.dumps(output) + '\n')
 

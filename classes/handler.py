@@ -12,7 +12,7 @@ from classes.field import Field
 from classes.helper import Helper
 
 class Handler:
-    def execute(local_id, visit_id, match_type, debug_level, output_file = '', category_id = 0):
+    def execute(local_id, visit_id, match_type, debug_level, output_file = '', category_id = 0, assistance = 0, incomes = 0):
         # DB connection
         db_connection = mysql.Mysql()
 
@@ -484,7 +484,10 @@ class Handler:
         print('')
 
         if (output_file != ''):
-            statistics.writeOutput(db_connection)
+            statistics.writeOutput(db_connection, {
+                'assistance': assistance,
+                'incomes': incomes
+            })
 
         # If tournament match
         if (match_type == 3):

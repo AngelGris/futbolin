@@ -44,4 +44,14 @@ try:
 except:
     category_id = ''
 
-Handler.execute(args[0], args[1], args[2], args[3], output_file, category_id)
+try:
+    assistance = sys.argv[7]
+except:
+    assistance = 0
+
+try:
+    incomes = sys.argv[8]
+except:
+    incomes = 0
+
+Handler.execute(args[0], args[1], args[2], args[3], output_file, category_id, assistance, incomes)
