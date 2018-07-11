@@ -1,24 +1,21 @@
 #!/usr/bin/python3
 
+# Imports
 import classes.player as Player
-import random
-import math
 import json
-from classes.helper import Helper
+import math
+import random
 
 class Team:
     _db_connection = None
-    count = 0
     _enabled = False
 
-    def __init__(self, id, field, match_type, max_stamina, category_id, db_connection, reset_counter = False):
+    def __init__(self, id, field, match_type, max_stamina, category_id, db_connection, local):
         self._db_connection = db_connection
         result = self._db_connection.query("SELECT `teams`.`name`, `teams`.`short_name`, `teams`.`stadium_name`, `teams`.`formation`, `strategies`.`j01_start_x`, `strategies`.`j01_start_y`, `strategies`.`j01_end_x`, `strategies`.`j01_end_y`, `strategies`.`j02_start_x`, `strategies`.`j02_start_y`, `strategies`.`j02_end_x`, `strategies`.`j02_end_y`, `strategies`.`j03_start_x`, `strategies`.`j03_start_y`, `strategies`.`j03_end_x`, `strategies`.`j03_end_y`, `strategies`.`j04_start_x`, `strategies`.`j04_start_y`, `strategies`.`j04_end_x`, `strategies`.`j04_end_y`, `strategies`.`j05_start_x`, `strategies`.`j05_start_y`, `strategies`.`j05_end_x`, `strategies`.`j05_end_y`, `strategies`.`j06_start_x`, `strategies`.`j06_start_y`, `strategies`.`j06_end_x`, `strategies`.`j06_end_y`, `strategies`.`j07_start_x`, `strategies`.`j07_start_y`, `strategies`.`j07_end_x`, `strategies`.`j07_end_y`, `strategies`.`j08_start_x`, `strategies`.`j08_start_y`, `strategies`.`j08_end_x`, `strategies`.`j08_end_y`, `strategies`.`j09_start_x`, `strategies`.`j09_start_y`, `strategies`.`j09_end_x`, `strategies`.`j09_end_y`, `strategies`.`j10_start_x`, `strategies`.`j10_start_y`, `strategies`.`j10_end_x`, `strategies`.`j10_end_y`, `strategies`.`j11_start_x`, `strategies`.`j11_start_y`, `strategies`.`j11_end_x`, `strategies`.`j11_end_y` FROM `teams` INNER JOIN `strategies` ON `strategies`.`id` = `teams`.`strategy_id` WHERE `teams`.`id` = " + str(id) + " LIMIT 1", 1)
         self._id = id
         self._field = field
-        if (reset_counter):
-            Team.count = 0
-        self._index = Team.count
+        self._index = 0 if local else 1
         self._name = result['name']
         self._short_name = result['short_name']
         self._stadium_name = result['stadium_name']
@@ -79,8 +76,6 @@ class Team:
             if (player.getIndex() not in self._players_in_field) and player.isPresent():
                 self._startingFormation.append(player)
 
-        Team.count += 1
-
     def __str__(self):
         output = ''
         for player in self._players:
@@ -120,7 +115,7 @@ class Team:
         player = -1
         for x in self._players_in_field:
             if (exclude != x and self._players[x].isActive()):
-                distance = Helper.calculateDistance(positioning, self._players[x].getPositioning())
+                distance = math.hypot(self._players[x].getPositioning()[0] - positioning[0], self._players[x].getPositioning()[1] - positioning[1])
                 if (distance < distance_min):
                     distance_min = distance
                     player = x
@@ -130,35 +125,6 @@ class Team:
     def getEnabled(self):
         return self._enabled
 
-    def getFormation(self):
-        output = []
-        for player in self._players:
-            positioning = player.getPositioningDefensive()
-
-            if self._index == 0:
-                top = min([44, int(positioning[1] * 100 / self._field[1])])
-            else:
-                top = max([56, int(positioning[1] * 100 / self._field[1])])
-
-            if (player.isActive()):
-                output.append({
-                    'number' : player.getNumber(),
-                    'short_name' : player.getShortName(),
-                    'location' : positioning,
-                    'left' : int(positioning[0] * 100 / self._field[0]),
-                    'top' : top,
-                })
-            else:
-                output.append({
-                    'number' : '',
-                    'short_name' : '',
-                    'location' : positioning,
-                    'left' : int(positioning[0] * 100 / self._field[0]),
-                    'top' : top,
-                })
-
-        return output
-
     def getGoalkeeper(self):
         pos = 0
         while (not self._players[self._players_in_field[pos]].isActive()):
@@ -166,13 +132,8 @@ class Team:
 
         return self.getPlayerAtPos(pos)
 
-    def getHeadingPlayer(self, ball, goalkeeper = True):
+    def getHeadingPlayer(self, ball):
         probs = [0 for x in range(len(self._players_in_field))]
-        if goalkeeper:
-            if (self._players[self._players_in_field[0]].isActive()):
-                probs[0] = self._players[self._players_in_field[0]].getJumping()
-            else:
-                probs[0] = 0
 
         for x in range(1,len(self._players_in_field)):
             player = self._players[x]
@@ -197,7 +158,7 @@ class Team:
 
         s = self._players_in_field[s]
 
-        return [s, self._players[s].getJumping(), self._players[s].getHeading()]
+        return [s, total, self._players[s].getHeading() / 100]
 
     def getId(self):
         return self._id
@@ -207,7 +168,7 @@ class Team:
         plays = [2, 3, 4, 7] # 0 = running, 1 = passing, 2 = shooting, 3 = dribbling
         player = self._players[player]
 
-        probs[2] = int(player.getProbsToShoot(goal_distance) * 50) # 50% is the highest chance to shoot on goal
+        probs[2] = int(player.getProbsToShoot(goal_distance) * 100) # 100% is the highest chance to shoot on goal
 
         if closest_rival[1] > (closest_rival[2] * 2):
             # No near rival
@@ -247,7 +208,7 @@ class Team:
         for x in range(total):
             if(self._players[self._players_in_field[x]].isActive() and self._players_in_field[x] != pos):
                 destination = self._players[self._players_in_field[x]].getPositioning()
-                distance = int(Helper.calculateDistance(location, destination))
+                distance = int(math.hypot(location[0] - destination[0], location[1] - destination[1]))
                 if (forward and ((self._index == 0 and location[1] < destination[1]) or (self._index == 1 and location[1] > destination[1]))):
                     distance = int(distance / 2)
 
@@ -265,6 +226,21 @@ class Team:
             s += 1
 
         return self._players_in_field[s]
+
+    def getPenaltyShooter(self, ball):
+        probs = [0 for x in range(len(self._players_in_field))]
+
+        max_precision = -1
+        max_player = None
+        for x in range(len(self._players_in_field)):
+            player = self._players[x]
+            if player.isActive():
+                precision = player.getPrecision(ball.getPositioning())
+                if precision > max_precision:
+                    max_precision = precision
+                    max_player = x
+
+        return [max_player, max_precision]
 
     def getPlayer(self, pos):
         return self._players[pos]
@@ -297,7 +273,7 @@ class Team:
     def getStartingFormation(self):
         output = []
         for player in self._startingFormation:
-            positioning = player.getPositioningDefensive()
+            positioning = player.getPositioningDef()
 
             if self._index == 0:
                 top = min([44, int(positioning[1] * 100 / self._field[1])])
@@ -330,16 +306,10 @@ class Team:
             stats.execInjury(self._index, player)
             player.deactivate(True)
 
-    def playerString(self, pos):
-        return str(self._players[pos])
-
     def redCard(self, stats, index):
         player = self._players[index]
         player.redCard()
         stats.execRedCard(self._index, player)
-
-    def reset(self):
-        self._substitutions_count = 3
 
     def resetPositionings(self, proportion = 0):
         for x in self._players_in_field:
@@ -347,28 +317,6 @@ class Team:
 
     def setPlayerPositioning(self, player, positioning):
         self._players[player].setPositioning(positioning)
-
-    def showField(self):
-        field = [[0 for x in range(9)] for y in range(12)]
-
-        for x in self._players_in_field:
-            player = self._players[x]
-            positioning = player.getPositioning()
-            pos_x = int((positioning[1]) // 10)
-            pos_y = int((positioning[0]) // 10)
-            field[pos_x][pos_y] = player.getNumber()
-
-        for r in field:
-            row = ''
-            for f in r:
-                if f == 0:
-                    row += '..'
-                elif f < 10:
-                    row += '0' + str(f)
-                else:
-                    row += str(f)
-
-            print(row)
 
     def substitution(self, position, index_in, stats = False, Injured = False):
         if self._substitutions_count > 0:
@@ -383,7 +331,6 @@ class Team:
                     stats.execSubstitutionInjury(self._index, player_out, self._players[index_in])
                 else:
                     stats.execSubstitution(self._index, player_out, self._players[index_in])
-
 
     def updatePositionings(self, field, ball, seconds):
         if self._index == 0:

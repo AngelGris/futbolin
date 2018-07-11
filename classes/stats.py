@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 
-import random
-import math
-import json
-import time
+# Imports
 import datetime
+import json
+import math
 import os
+import random
+import time
 
 class Stats:
     def __init__(self, local, visit, matchType, debugLevel = 0, outputFile = '', categoryId = 0):
@@ -28,6 +29,7 @@ class Stats:
         self._fouls = [0, 0]
         self._cards = [[0, 0], [0, 0]]
         self._injuries = [0, 0]
+        self._penalties = [0, 0, 0]
 
     def __str__ (self):
         self._possesionPerc = [0, 0]
@@ -59,7 +61,7 @@ class Stats:
 
         # Actions
         #  1 = Corner kick
-        #  2 = Heading defence
+        #  2 = Heading Defense
         #  3 = Dribbling
         #  4 = Foul
         #  5 = Freekick on goal
@@ -84,6 +86,14 @@ class Stats:
         # 24 = First yellow card
         # 25 = Second yellow card
         # 26 = Red card
+        # 27 = Poor goalkeeper defense
+        # 28 = Defense clear the ball
+        # 29 = Face defender
+        # 30 = Freekick
+        # 31 = Penalty
+        # 32 = Penalty shoot away
+        # 33 = Penalty shoot on goal
+        # 34 = Freeckick centering
         if self._outputFile == '':
             if self._debugLevel == 3:
                 input(self.getFormattedTime() + ' - ' + description)
@@ -105,12 +115,22 @@ class Stats:
     def execDefendingHeader(self, team, player):
         player.increasePlay(2)
         self._setPossesion(team)
-        self._printAction(0, team, 2, str(player) + ' rechaza de cabeza')
+        self._printAction(0, team, 0, str(player) + ' rechaza de cabeza')
+
+    def execDefenseClear(self, team, player):
+        player.increasePlay()
+        self._setPossesion((team + 1) % 2)
+        self._printAction(0, team, 28, str(player) + ' saca la pelota en la línea!')
 
     def execDribbling(self, team, player1, player2):
         player1.increasePlay()
         player2.increasePlay()
-        self._printAction(2, team, 3, str(player1) + ' escapa de la marca de ' + str(player2))
+        self._printAction(2, team, 3, str(player1) + ' escapa a la marca de ' + str(player2))
+
+    def execFacingDefender(self, team, player1, player2):
+        player1.increasePlay()
+        player2.increasePlay()
+        self._printAction(2, team, 29, str(player1) + ' encara a ' + str(player2))
 
     def execFirstYellowCard(self, team, player):
         self._cards[team][0] += 1
@@ -121,6 +141,14 @@ class Stats:
         player2.increasePlay()
         self._fouls[(team + 1) % 2] += 1
         self._printAction(1, team, 4, str(player2) + ' le hace falta a ' + str(player1))
+
+    def execFreekick(self, team, player):
+        player.increasePlay()
+        self._printAction(2, team, 30, str(player) + ' va a hacer el tiro libre')
+
+    def execFreekickCentering(self, team, player):
+        player.increasePlay()
+        self._printAction(0, team, 34, str(player) + ' va a convertir el tiro libre en un centro al área')
 
     def execFreekickOnGoal(self, team, player):
         player.increasePlay()
@@ -135,16 +163,22 @@ class Stats:
     def execGoalkeeperCutsCrossing(self, team, player):
         player.increasePlay(10)
         self._setPossesion(team)
-        self._printAction(1, team, 7, str(player) + ' sale y corta el centro')
+        self._printAction(0, team, 7, str(player) + ' sale y corta el centro')
 
-    def execGoalkeeperDefence(self, team, player):
+    def execGoalkeeperDefense(self, team, player):
         player.increasePlay(50)
         self._setPossesion(team)
         self._printAction(0, team, 8, str(player) + ' ataja el remate')
 
-    def execGoalkeeperDefenceToCorner(self, team, player):
+    def execGoalkeeperDefenseToCorner(self, team, player):
         player.increasePlay(30)
         self._printAction(0, team, 9, str(player) + ' saca el tiro al corner')
+
+    def execGoalkeeperPoorDefense(self, team, player, goalkeeper):
+        player.increasePlay()
+        self._printAction(0, team, 27, 'Se le escapa la pelota a ' + str(goalkeeper) + ' y es GOL de ' + str(player))
+        self._scorers.append([self.getFormattedTime(), team, player.getShortName(), player.getId()])
+        self._goals[team] += 1
 
     def execGoalKick(self, team, player):
         player.increasePlay(5)
@@ -154,7 +188,7 @@ class Stats:
     def execHeaderAway(self, team, player):
         player.increasePlay()
         self._shots[team][0] += 1
-        self._printAction(0, team, 11, str(player) + ' cabecea fuera')
+        self._printAction(0, team, 11, str(player) + ' cabecea fuera, saque de arco')
 
     def execHeaderOnTarget(self, team, player):
         player.increasePlay()
@@ -183,6 +217,13 @@ class Stats:
         player2.increasePlay()
         self._printAction(2, team, 15, str(player1) + ' pasa la pelota a ' + str(player2))
 
+    def execPenalty(self, team, player1, player2):
+        player1.increasePlay()
+        player2.increasePlay()
+        self._penalties[0] += 1
+        self._fouls[(team + 1) % 2] += 1
+        self._printAction(0, team, 31, str(player2) + ' baja a ' + str(player1) + ' dentro del área y es penal!')
+
     def execRedCard(self, team, player):
         self._cards[team][1] += 1
         self._printAction(0, team, 26, 'Roja directa para ' + str(player) + ' que se va a las duchas')
@@ -191,15 +232,15 @@ class Stats:
         player.increasePlay()
         self._printAction(2, team, 16, str(player) + ' corre con la pelota')
 
-    def execSecondYellowCard(self, team, player):
-        self._cards[team][1] += 1
-        self._printAction(0, team, 25, str(player) + ' recibe otra amarilla y se va expulsado')
-
     def execScore(self, team, player):
         player.increasePlay()
         self._printAction(0, team, 19, 'GOOOOOLLLL!!!!! de ' + str(player))
         self._scorers.append([self.getFormattedTime(), team, player.getShortName(), player.getId()])
         self._goals[team] += 1
+
+    def execSecondYellowCard(self, team, player):
+        self._cards[team][1] += 1
+        self._printAction(0, team, 25, str(player) + ' recibe otra amarilla y se va expulsado')
 
     def execShootAway(self, team, player):
         player.increasePlay()
@@ -211,6 +252,19 @@ class Stats:
         self._shots[team][0] += 1
         self._shots[team][1] += 1
         self._printAction(0, team, 18, str(player) + ' tira al arco...')
+
+    def execShootPenaltyAway(self, team, player):
+        player.increasePlay()
+        self._penalties[1] += 1
+        self._shots[team][0] += 1
+        self._printAction(0, team, 32, str(player) + ' tira el penal a las nubes, saque de arco')
+
+    def execShootPenaltyOnGoal(self, team, player):
+        player.increasePlay()
+        self._penalties[2] += 1
+        self._shots[team][0] += 1
+        self._shots[team][1] += 1
+        self._printAction(0, team, 33, str(player) + ' va a ejecutar el penal...')
 
     def execSubstitution(self, team, player_out, player_in):
         self._substitutions[team] += 1
@@ -252,6 +306,9 @@ class Stats:
 
     def getInjuries(self):
         return self._injuries
+
+    def getPenalties(self):
+        return self._penalties
 
     def getShots(self):
         return self._shots

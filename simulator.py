@@ -2,7 +2,7 @@
 
 # Imports
 import sys
-from classes.handler import Handler
+import classes.simulator as Simulator
 
 # Arguments list:
 # 0 = script name
@@ -52,10 +52,12 @@ substitutions_total = 0
 fouls_total = 0
 cards_total = [0, 0]
 injuries_total = 0
+penalties_total = [0, 0, 0]
 results = [0, 0, 0]
 
 while True:
-    statistics = Handler.execute(args[0], args[1], args[2], args[3], output_file, category_id)
+    sim = Simulator.Simulator(args[0], args[1], args[2], args[3], output_file, category_id)
+    statistics = sim.simulate()
 
     goals = statistics.getGoals()
     if (goals[0] > goals[1]):
@@ -64,6 +66,11 @@ while True:
         results[2] += 1
     else:
         results[1] += 1
+
+    penalties = statistics.getPenalties()
+    penalties_total[0] += penalties[0]
+    penalties_total[1] += penalties[1]
+    penalties_total[2] += penalties[2]
 
     shots = statistics.getShots()
     shots_total[0][0] += shots[0][0]
@@ -95,6 +102,7 @@ while True:
     print('Resultados:', results)
     print('Goles por equipo:', goals_total[0], '(', '{:05.2f}'.format(goals_total[0] / games_count), ') -', goals_total[1], '(', '{:05.2f}'.format(goals_total[1] / games_count), ')')
     print('Goles por partido:', '{:05.2f}'.format((goals_total[0] + goals_total[1]) / games_count))
+    print('Penales por partido:', '{:05.2f}'.format(penalties_total[0] / games_count), '({:05.2f}%'.format(penalties_total[1] / penalties_total[0] * 100 if penalties_total[0] > 0 else 0), '-', '{:05.2f}%)'.format(penalties_total[2] / penalties_total[0] * 100 if penalties_total[0] else 0))
     print('Partidos sin goles:', games_closed)
     print('Disparos por equipo:', str(shots_total[0][0]), '(', str(shots_total[0][1]), ') -', str(shots_total[1][0]), '(', str(shots_total[1][1]), ')')
     print('Disparos total:', str(total_shots[0]), '(', str(total_shots[1]), ')')

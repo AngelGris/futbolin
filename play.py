@@ -2,7 +2,7 @@
 
 # Imports
 import sys
-from classes.handler import Handler
+import classes.simulator as Simulator
 
 # Arguments list:
 # 0 = script name
@@ -54,4 +54,4 @@ try:
 except:
     incomes = 0
 
-Handler.execute(args[0], args[1], args[2], args[3], output_file, category_id, assistance, incomes)
+Simulator.Simulator(args[0], args[1], args[2], args[3], output_file, category_id, assistance, incomes).simulate()

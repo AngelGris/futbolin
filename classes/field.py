@@ -10,11 +10,5 @@ class Field:
         else:
             return [Field._width / 2, Field._height]
 
-    def getHeight():
-        return Field._height
-
     def getSize():
         return [Field._width, Field._height]
-
-    def getWidth():
-        return Field._width

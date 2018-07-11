@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-import random
+# Imports
 import math
-from classes.helper import Helper
+import random
 
 class Player:
     # Constants
@@ -81,7 +81,7 @@ class Player:
         if self._stamina < break_point:
             rate = self._max_stamina / (1 + math.pow(math.exp(1) / 2.2, (break_point / 2) - self._stamina))
 
-        return max(1, int(value * rate))
+        return max(1, round(value * rate))
 
     def deactivate(self, injured = False):
         self._injured = injured
@@ -92,9 +92,6 @@ class Player:
 
     def getDefending(self):
         return self._staminaEffect(self._defending)
-
-    def getDistance(self):
-        return self._distance
 
     def getDribbling(self):
         return self._staminaEffect(self._dribbling)
@@ -117,17 +114,22 @@ class Player:
     def getJumping(self):
         return self._staminaEffect(self._jumping)
 
-    def getMaxStrength(self):
-        return self._MAX_STRENGTH
-
-    def getMaxSpeed(self):
-        return Player._MAX_SPEED
-
     def getNumber(self):
         return self._number
 
     def getPassing(self):
         return self._staminaEffect(self._passing)
+
+    def getProbsToRun(self):
+        return math.hypot(self._pos_cur[0] - self._pos_att[0], self._pos_cur[1] - self._pos_att[1]) / math.hypot(self._pos_def[0] - self._pos_att[0], self._pos_def[1] - self._pos_att[1])
+
+    def getProbsToShoot(self, distance):
+        rate = 0
+        break_point = 40
+        if distance <= self._MAX_STRENGTH:
+            rate = 1 - (1 / (1 + math.pow(math.exp(1) / 2.2, (break_point / 2) - distance)))
+
+        return rate
 
     def getPosition(self):
         return self._position
@@ -144,25 +146,8 @@ class Player:
     def getPositioningDef(self):
         return self._pos_def
 
-    def getPositioningDefensive(self):
-        return self._pos_def
-
     def getPrecision(self, goal):
-        return self.getProbsToShoot(Helper.calculateDistance(self._pos_cur, goal)) * self._precision
-
-    def getProbsToRun(self):
-        return Helper.calculateDistance(self._pos_cur, self._pos_att) / Helper.calculateDistance(self._pos_def, self._pos_att)
-
-    def getProbsToShoot(self, distance):
-        rate = 0
-        correction_rate = 1.2
-        if distance <= self._MAX_STRENGTH:
-            if distance < (self.getShootingStrength() / correction_rate):
-                rate = (self._MAX_STRENGTH - (math.pow(distance, 2) / (self.getShootingStrength() / correction_rate))) / self._MAX_STRENGTH
-            else:
-                rate = (math.pow(self._MAX_STRENGTH - distance, 2) / (self._MAX_STRENGTH - (self.getShootingStrength() / correction_rate))) / self._MAX_STRENGTH
-
-        return rate
+        return self._staminaEffect(self.getProbsToShoot(math.hypot(self._pos_cur[0] - goal[0], self._pos_cur[1] - goal[1])) * self._precision)
 
     def getShootingStrength(self):
         return self._staminaEffect(self._strength * Player._MAX_STRENGTH / 100)
@@ -213,7 +198,6 @@ class Player:
             recovery = 0
             if (self._injured):
                 # Select type of injury
-                print('lesionado')
                 injuries = db_connection.query("SELECT `id`, `recovery`, `chance` FROM `injuries` ORDER BY `chance`;", 100)
 
                 probs = {}
@@ -263,7 +247,7 @@ class Player:
     def updatePositioning(self, portion, seconds, hasBall = False):
         if self.getHasBall() == hasBall and self.isActive():
             destination = [(portion * (self._pos_att[0] - self._pos_def[0])) + self._pos_def[0], (portion * (self._pos_att[1] - self._pos_def[1])) + self._pos_def[1]]
-            distance = math.sqrt(math.pow(self._pos_cur[0] - destination[0], 2) + math.pow(self._pos_cur[1] - destination[1], 2))
+            distance = math.hypot(self._pos_cur[0] - destination[0], self._pos_cur[1] - destination[1])
             speed = self.getSpeed()
 
             if distance >= (speed * seconds * (self._speed / 100)):
@@ -273,14 +257,12 @@ class Player:
                 speed_y = (destination[1] - self._pos_cur[1]) * proportion
                 self._pos_cur[0] += speed_x
                 self._pos_cur[1] += speed_y
-
-                self._reduceStamina(distance * self.getCondition())
-                self._distance += distance
             else:
-                distance = Helper.calculateDistance(self._pos_cur, destination)
-                self._reduceStamina(distance * self.getCondition())
-                self._distance += distance
+                distance = math.hypot(self._pos_cur[0] - destination[0], self._pos_cur[1] - destination[1])
                 self._pos_cur = destination
+
+            self._reduceStamina(distance * self.getCondition())
+            self._distance += distance
 
     def yellowCard(self):
         self._cards[0] += 1
