@@ -115,7 +115,7 @@ class Stats:
     def execDefendingHeader(self, team, player):
         player.increasePlay(2)
         self._setPossesion(team)
-        self._printAction(0, team, 0, str(player) + ' rechaza de cabeza')
+        self._printAction(0, team, 2, str(player) + ' rechaza de cabeza')
 
     def execDefenseClear(self, team, player):
         player.increasePlay()
