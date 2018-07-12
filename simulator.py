@@ -53,6 +53,7 @@ fouls_total = 0
 cards_total = [0, 0]
 goalkeepers_cards_total = [0, 0]
 injuries_total = 0
+goalkeepers_injuries_total = 0
 penalties_total = [0, 0, 0]
 results = [0, 0, 0]
 
@@ -97,6 +98,8 @@ while True:
     injuries = statistics.getInjuries()
     injuries_total += injuries[0] + injuries[1]
 
+    goalkeepers_injuries_total += statistics.getGoalkeepersInjuries()
+
     games_count += 1
     goals_total[0] += goals[0]
     goals_total[1] += goals[1]
@@ -117,3 +120,4 @@ while True:
     print('Tarjetas por partidos:', '{:05.2f}'.format(cards_total[0] / games_count) + ' / ' + '{:05.2f}'.format(cards_total[1] / games_count))
     print('Tarjetas a los arqueros:', '{:05.2f}'.format(goalkeepers_cards_total[0] / games_count), '/', '{:05.2f}'.format(goalkeepers_cards_total[1] / games_count))
     print('Lesiones por partido:', '{:05.2f}'.format(injuries_total / games_count))
+    print('Arqueros lesionados por partido:', '{:05.2f}'.format(goalkeepers_injuries_total / games_count))

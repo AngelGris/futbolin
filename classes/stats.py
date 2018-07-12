@@ -30,6 +30,7 @@ class Stats:
         self._cards = [[0, 0], [0, 0]]
         self._goalkeepers_cards = [0, 0]
         self._injuries = [0, 0]
+        self._goalkeepers_injuries = 0
         self._penalties = [0, 0, 0]
 
     def __str__ (self):
@@ -180,6 +181,9 @@ class Stats:
         self._goalkeepers_cards[0] += 1
         self._printAction(0, team, 24, str(player) + ' recibe una tarjeta amarilla por hacer tiempo')
 
+    def execGoalkeeperInjury(self):
+        self._goalkeepers_injuries += 1
+
     def execGoalkeeperPoorDefense(self, team, player, goalkeeper):
         player.increasePlay()
         self._printAction(0, team, 27, 'Se le escapa la pelota a ' + str(goalkeeper) + ' y es GOL de ' + str(player))
@@ -317,6 +321,9 @@ class Stats:
 
     def getGoalkeepersCards(self):
         return self._goalkeepers_cards
+
+    def getGoalkeepersInjuries(self):
+        return self._goalkeepers_injuries
 
     def getInjuries(self):
         return self._injuries

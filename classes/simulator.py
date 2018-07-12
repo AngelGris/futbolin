@@ -163,7 +163,7 @@ class Simulator:
         # 14 = Penalty, injury, red card
         dribbling = self._teams[possesion_team].getPlayer(possesion_player).getDribbling() / 100
         tackling = min(1, self._teams[rival_team].getPlayer(closest_rival[0]).getTackling() / 85)
-        stamina = min(1, self._teams[possesion_team].getPlayer(possesion_player).getStamina() / 70)
+        stamina = min(1, self._teams[possesion_team].getPlayer(possesion_player).getStamina() / 65)
         ball_position = self._ball.getPositioning()
         goal_position = Field.getGoalPositioning(rival_team)
         goal_distance = math.hypot(ball_position[0] - goal_position[0], ball_position[1] - goal_position[1])
@@ -384,6 +384,15 @@ class Simulator:
             self._ball.setPositioning([self._field_size[0] / 2, self._field_size[1] - 5.5])
 
         time_update = self._statistics.increaseTime(self._time_step * 2)
+
+        # Goalkeeper can get injured
+        if (random.randint(0, 200) == 0):
+            time_update += self._statistics.increaseTime(self._time_step * 2)
+            self._statistics.execGoalkeeperInjury()
+            self._teams[possesion_team].playerInjured(self._statistics, goalkeeper.getIndex())
+            goalkeeper = self._teams[possesion_team].getGoalkeeper()
+            self._ball.setPlayer(goalkeeper)
+
         self._statistics.execGoalKick(self._ball.getTeam(), goalkeeper)
         self._play_type = 3
 
