@@ -392,7 +392,7 @@ class Simulator:
         rival_team = (possesion_team + 1) % 2
         if (self._statistics.getTime() > 3600 and not goalkeeper.hasYellowCard() and goals[possesion_team] > goals[rival_team]):
             time_update += self._statistics.increaseTime(self._time_step * 3)
-            if (random.randint(0,10) == 0):
+            if (random.randint(0,10) <= 1):
                 self._teams[possesion_team].goalkeeperYellowCard(self._statistics, goalkeeper.getIndex())
 
         return time_update
