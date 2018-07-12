@@ -1,33 +1,30 @@
 #!/usr/bin/python3
 
 # Imports
+import random
 import sys
+import classes.mysql as mysql
 import classes.simulator as Simulator
 
 # Arguments list:
 # 0 = script name
-# 1 = home team ID
-# 2 = visit team ID
-# 3 = debug level
-# 4 = output file name (optional)
-# 5 = tournament category ID (optional)
+# 1 = match type
+# 2 = debug level
+# 3 = output file name (optional)
+# 4 = tournament category ID (optional)
 
-if len(sys.argv) < 4:
-    print('Missing arguments (Home team ID, Visit team ID, Match type, Debug level, [Output file, Category ID])')
+if len(sys.argv) < 2:
+    print('Missing arguments (Match type, Debug level, [Output file, Category ID])')
     exit()
 
 args = []
-for i in range(4):
+for i in range(2):
     try:
         args.append(int(sys.argv[i + 1]))
     except ValueError:
         if (i == 0):
-            print('Home team ID must be an integer')
-        elif (i == 1):
-            print('Visit team ID must be an integer')
-        elif (i == 2):
             print('Match type must be an integer')
-        elif (i == 3):
+        elif (i == 1):
             print('Debug level must be an integer')
         exit()
     except:
@@ -35,12 +32,12 @@ for i in range(4):
         raise
 
 try:
-    output_file = sys.argv[5]
+    output_file = sys.argv[3]
 except:
     output_file = ''
 
 try:
-    category_id = sys.argv[6]
+    category_id = sys.argv[4]
 except:
     category_id = 0
 
@@ -57,8 +54,13 @@ goalkeepers_injuries_total = 0
 penalties_total = [0, 0, 0]
 results = [0, 0, 0]
 
+db_connection = mysql.Mysql()
+teams = db_connection.query('SELECT `id` FROM `teams` WHERE `user_id` > 1 AND `playable` = 1', 1000)
+
 while True:
-    sim = Simulator.Simulator(args[0], args[1], args[2], args[3], output_file, category_id)
+    local = random.choice(teams)
+    visit = random.choice(teams)
+    sim = Simulator.Simulator(local['id'], visit['id'], args[0], args[1], output_file, category_id)
     statistics = sim.simulate()
 
     goals = statistics.getGoals()
