@@ -170,6 +170,12 @@ class Player:
     def getTeam(self):
         return self._team
 
+    def hasYellowCard(self):
+        if self._cards[0] == 1:
+            return True
+        else:
+            return False
+
     def increasePlay(self, count = 1):
         self._plays += count
         self._reduceStamina(count * self.getCondition() * 5)

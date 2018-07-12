@@ -373,19 +373,29 @@ class Simulator:
 
         return time_update
 
-    def _execGoalKick(self):
+    def _execGoalKick(self, possesion_team, time_half):
         self._teams[0].resetPositionings(0.5)
         self._teams[1].resetPositionings(0.5)
+        goalkeeper = self._teams[self._ball.getTeam()].getGoalkeeper()
 
         if self._ball.getTeam() == 0:
             self._ball.setPositioning([self._field_size[0] / 2, 5.5])
         else:
             self._ball.setPositioning([self._field_size[0] / 2, self._field_size[1] - 5.5])
 
-        self._statistics.execGoalKick(self._ball.getTeam(), self._teams[self._ball.getTeam()].getGoalkeeper())
+        time_update = self._statistics.increaseTime(self._time_step * 2)
+        self._statistics.execGoalKick(self._ball.getTeam(), goalkeeper)
         self._play_type = 3
 
-        return self._statistics.increaseTime(self._time_step * 2)
+        # After minute 60 winning goalkeeper starts loosing time and can take a yellow card
+        goals = self._statistics.getGoals()
+        rival_team = (possesion_team + 1) % 2
+        if (self._statistics.getTime() > 3600 and not goalkeeper.hasYellowCard() and goals[possesion_team] > goals[rival_team]):
+            time_update += self._statistics.increaseTime(self._time_step * 3)
+            if (random.randint(0,10) == 0):
+                self._teams[possesion_team].goalkeeperYellowCard(self._statistics, goalkeeper.getIndex())
+
+        return time_update
 
     def _execKickoff(self, possesion_team):
         self._teams[0].resetPositionings()
@@ -690,7 +700,7 @@ class Simulator:
                         self._ball.setPlayer(self._teams[possesion_team].getGoalkeeper())
 
                     # Goal kick
-                    time_update += self._execGoalKick()
+                    time_update += self._execGoalKick(possesion_team, time_half)
                 elif self._play_type == 6:
                     # Substitutions
                     if time_half == 2:

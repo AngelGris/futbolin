@@ -300,6 +300,14 @@ class Team:
 
         return output
 
+    def goalkeeperYellowCard(self, stats, index):
+        player = self._players[index]
+
+        if (player.yellowCard()):
+            stats.execGoalkeeperFirstYellowCard(self._index, player)
+        else:
+            stats.execGoalkeeperSecondYellowCard(self._index, player)
+
     def playerInjured(self, stats, index):
         player_in = self.checkSubstitutions(stats, self._players[index], True)
         if (len(player_in) == 0):

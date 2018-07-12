@@ -28,6 +28,7 @@ class Stats:
         self._substitutions = [0, 0]
         self._fouls = [0, 0]
         self._cards = [[0, 0], [0, 0]]
+        self._goalkeepers_cards = [0, 0]
         self._injuries = [0, 0]
         self._penalties = [0, 0, 0]
 
@@ -174,11 +175,21 @@ class Stats:
         player.increasePlay(30)
         self._printAction(0, team, 9, str(player) + ' saca el tiro al corner')
 
+    def execGoalkeeperFirstYellowCard(self, team, player):
+        self._cards[team][0] += 1
+        self._goalkeepers_cards[0] += 1
+        self._printAction(0, team, 24, str(player) + ' recibe una tarjeta amarilla por hacer tiempo')
+
     def execGoalkeeperPoorDefense(self, team, player, goalkeeper):
         player.increasePlay()
         self._printAction(0, team, 27, 'Se le escapa la pelota a ' + str(goalkeeper) + ' y es GOL de ' + str(player))
         self._scorers.append([self.getFormattedTime(), team, player.getShortName(), player.getId()])
         self._goals[team] += 1
+
+    def execGoalkeeperSecondYellowCard(self, team, player):
+        self._cards[team][1] += 1
+        self._goalkeepers_cards[1] += 1
+        self._printAction(0, team, 25, str(player) + ' recibe otra amarilla y se va expulsado')
 
     def execGoalKick(self, team, player):
         player.increasePlay(5)
@@ -303,6 +314,9 @@ class Stats:
 
     def getGoals(self):
         return self._goals
+
+    def getGoalkeepersCards(self):
+        return self._goalkeepers_cards
 
     def getInjuries(self):
         return self._injuries
