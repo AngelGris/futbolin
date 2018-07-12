@@ -131,12 +131,12 @@ class Simulator:
 
         return time_update + self._statistics.increaseTime(self._time_step)
 
-    def _execDecision(self, possesion_team, possesion_player):
+    def _execDecision(self, possesion_team, possesion_player, last_kickoff):
         rival_team = (possesion_team + 1) % 2
         closest_friend = self._teams[possesion_team].getClosestPlayer(self._teams[possesion_team].getPlayer(possesion_player).getPositioning(), possesion_player)
         closest_rival = self._teams[rival_team].getClosestPlayer(self._teams[possesion_team].getPlayer(possesion_player).getPositioning())
         goal_distance = math.hypot(self._ball.getPositioning()[0] - Field.getGoalPositioning(rival_team)[0], self._ball.getPositioning()[1] - Field.getGoalPositioning(rival_team)[1])
-        self._play_type = self._teams[possesion_team].getNextPlay(possesion_player, closest_friend, closest_rival, goal_distance)
+        self._play_type = self._teams[possesion_team].getNextPlay(possesion_player, closest_friend, closest_rival, goal_distance, last_kickoff)
         return self._statistics.increaseTime(self._time_step / 2)
 
     def _execDribbling(self, possesion_team, possesion_player):
@@ -650,6 +650,7 @@ class Simulator:
             self._teams[1].resetPositionings()
             self._ball.setPositioning([45.0, 60.0])
             kickoff_player = self._teams[kickoff_team].getClosestPlayer(self._ball.getPositioning())
+            last_kickoff = 0
             self._ball.setPlayer(self._teams[kickoff_team].getPlayer(kickoff_player[0]), False);
             self._teams[kickoff_team].setPlayerPositioning(self._ball.getPlayer().getIndex(), self._ball.getPositioning())
 
@@ -669,6 +670,7 @@ class Simulator:
                 #  9 = Penalty kick
                 if self._play_type == 1:
                     # Kick off
+                    last_kickoff = 0
                     time_update += self._execKickoff(possesion_team)
                 elif self._play_type == 2:
                     # Run with the ball
@@ -718,10 +720,11 @@ class Simulator:
                         print('Play', self._play_type)
                         exit()
                     # Make a decision
-                    time_update += self._execDecision(possesion_team, possesion_player)
+                    time_update += self._execDecision(possesion_team, possesion_player, last_kickoff)
 
                 self._teams[0].updatePositionings(self._field_size, self._ball, time_update)
                 self._teams[1].updatePositionings(self._field_size, self._ball, time_update)
+                last_kickoff += time_update
 
             print('*** FINAL ' + ('PRIMER' if time_half == 1 else 'SEGUNDO') + ' TIEMPO ***')
 

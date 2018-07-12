@@ -163,12 +163,13 @@ class Team:
     def getId(self):
         return self._id
 
-    def getNextPlay(self, player, closest_friend, closest_rival, goal_distance):
+    def getNextPlay(self, player, closest_friend, closest_rival, goal_distance, last_kickoff):
         probs = [0, 0, 0, 0] # 0 = running, 1 = passing, 2 = shooting, 3 = dribbling
         plays = [2, 3, 4, 7] # 0 = running, 1 = passing, 2 = shooting, 3 = dribbling
         player = self._players[player]
 
-        probs[2] = int(player.getProbsToShoot(goal_distance) * 100) # 100% is the highest chance to shoot on goal
+        if (last_kickoff > 60):
+            probs[2] = int(player.getProbsToShoot(goal_distance) * 100) # 100% is the highest chance to shoot on goal
 
         if closest_rival[1] > (closest_rival[2] * 2):
             # No near rival
