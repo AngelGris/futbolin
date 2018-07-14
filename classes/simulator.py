@@ -479,7 +479,7 @@ class Simulator:
         # 3 = Shoot on goal poorly defended GOAL!!!!
         # 4 = Shoot on goal not defended GOAL!!!
         base = 100
-        precision = shooter[1] / 120
+        precision = shooter[1] / 100
         goalkeeping = self._teams[rival_team].getGoalkeeper().getGoalKeeping() / 100
         probs = [0, 0, 0, 0, 0]
         probs[0] = base * (1 - precision)
@@ -617,21 +617,22 @@ class Simulator:
         time_half = 1
 
         # Calculate max stamina for official matches
-        if (self._match_type == 3):
+        if (self._match_type >= 3):
             if (self._local_id > 26):
                 local_stamina = self._db_connection.query('SELECT AVG(`stamina`) AS `stamina` FROM `players` WHERE `team_id` = ' + str(self._local_id) + ' AND `deleted_at` IS NULL', 1)
             else:
-                local_stamina = {'stamina' : 100}
+                local_stamina = {'stamina' : 100.0}
 
             if (self._visit_id > 26):
                 visit_stamina = self._db_connection.query('SELECT AVG(`stamina`) AS `stamina` FROM `players` WHERE `team_id` = ' + str(self._visit_id) + ' AND `deleted_at` IS NULL', 1)
             else:
-                visit_stamina = {'stamina' : 100}
+                visit_stamina = {'stamina' : 100.0}
 
             if local_stamina['stamina'] > visit_stamina['stamina']:
                 visit_max_stamina = visit_stamina['stamina'] / local_stamina['stamina']
             elif visit_stamina['stamina'] > local_stamina['stamina']:
                 local_max_stamina = local_stamina['stamina'] / visit_stamina['stamina']
+
             del local_stamina
             del visit_stamina
 
@@ -673,7 +674,7 @@ class Simulator:
             self._ball.setPlayer(self._teams[kickoff_team].getPlayer(kickoff_player[0]), False);
             self._teams[kickoff_team].setPlayerPositioning(self._ball.getPlayer().getIndex(), self._ball.getPositioning())
 
-            while(self._statistics.getTime() <= time_total):
+            while(self._statistics.getTime() <= time_total or self._play_type == 9):
                 time_update = 0
                 possesion_team = self._ball.getTeam()
                 possesion_player = self._ball.getPlayer().getIndex()
@@ -750,7 +751,7 @@ class Simulator:
             time_half += 1
             time_total *= 2
             kickoff_team = (kickoff_team + 1) % 2
-            play_type = 1
+            self._play_type = 1
 
         print('')
         print(self._statistics)

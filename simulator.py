@@ -44,6 +44,7 @@ except:
 games_count = 0
 games_closed = 0
 goals_total = [0, 0]
+goals_max = [0, 0]
 shots_total = [[0,0],[0,0]]
 substitutions_total = 0
 fouls_total = 0
@@ -107,9 +108,13 @@ while True:
     goals_total[1] += goals[1]
     if goals[0] == 0 and goals[1] == 0:
         games_closed += 1
+    if goals[0] + goals[1] > goals_max[0] + goals_max[1]:
+        goals_max[0] = goals[0]
+        goals_max[1] = goals[1]
 
     print('Partidos:', games_count)
     print('Resultados:', results)
+    print('Máxima goleada:', '{:d} - {:d}'.format(*goals_max))
     print('Goles por equipo:', goals_total[0], '(', '{:05.2f}'.format(goals_total[0] / games_count), ') -', goals_total[1], '(', '{:05.2f}'.format(goals_total[1] / games_count), ')')
     print('Goles por partido:', '{:05.2f}'.format((goals_total[0] + goals_total[1]) / games_count))
     print('Penales por partido:', '{:05.2f}'.format(penalties_total[0] / games_count), '({:05.2f}%'.format(penalties_total[1] / penalties_total[0] * 100 if penalties_total[0] > 0 else 0), '-', '{:05.2f}%)'.format(penalties_total[2] / penalties_total[0] * 100 if penalties_total[0] else 0))
