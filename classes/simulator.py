@@ -386,7 +386,7 @@ class Simulator:
         time_update = self._statistics.increaseTime(self._time_step * 2)
 
         # Goalkeeper can get injured
-        if (random.randint(0, 200) == 0):
+        if (random.randint(0, int(goalkeeper.getStamina() * 2)) == 0):
             time_update += self._statistics.increaseTime(self._time_step * 2)
             self._statistics.execGoalkeeperInjury()
             self._teams[possesion_team].playerInjured(self._statistics, goalkeeper.getIndex())
