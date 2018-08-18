@@ -22,9 +22,9 @@ class Player:
 
         if(int(id) > 0):
             if (match_type < 3):
-                response = db_connection.query("SELECT * FROM `players` WHERE `id` = " + str(id) + " AND `recovery` = 0 LIMIT 1;", 1)
+                response = db_connection.query("SELECT * FROM `players` WHERE `id` = " + str(id) + " AND `recovery` = 0 AND `deleted_at` IS NULL LIMIT 1;", 1)
             else:
-                response = db_connection.query("SELECT * FROM `players` WHERE `id` = " + str(id) + " AND `id` NOT IN (SELECT `player_id` FROM `player_cards` WHERE `category_id` = " + str(category_id) + " AND `suspension` > 0) AND `recovery` = 0 LIMIT 1;", 1)
+                response = db_connection.query("SELECT * FROM `players` WHERE `id` = " + str(id) + " AND `id` NOT IN (SELECT `player_id` FROM `player_cards` WHERE `category_id` = " + str(category_id) + " AND `suspension` > 0) AND `recovery` = 0 AND `deleted_at` IS NULL LIMIT 1;", 1)
 
             if (response):
                 self._number = response['number']
@@ -119,6 +119,9 @@ class Player:
 
     def getPassing(self):
         return self._staminaEffect(self._passing)
+
+    def getProbsToInjure(self):
+        return (100 - self.getStamina()) / 1000
 
     def getProbsToRun(self):
         return math.hypot(self._pos_cur[0] - self._pos_att[0], self._pos_cur[1] - self._pos_att[1]) / math.hypot(self._pos_def[0] - self._pos_att[0], self._pos_def[1] - self._pos_att[1])

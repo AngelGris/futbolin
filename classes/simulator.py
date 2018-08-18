@@ -163,7 +163,7 @@ class Simulator:
         # 14 = Penalty, injury, red card
         dribbling = self._teams[possesion_team].getPlayer(possesion_player).getDribbling() / 100
         tackling = min(1, self._teams[rival_team].getPlayer(closest_rival[0]).getTackling() / 85)
-        stamina = min(1, self._teams[possesion_team].getPlayer(possesion_player).getStamina() / 65)
+        injury = self._teams[possesion_team].getPlayer(possesion_player).getProbsToInjure()
         ball_position = self._ball.getPositioning()
         goal_position = Field.getGoalPositioning(rival_team)
         goal_distance = math.hypot(ball_position[0] - goal_position[0], ball_position[1] - goal_position[1])
@@ -176,19 +176,19 @@ class Simulator:
         probs[1] = base * (1 - dribbling) * math.pow(tackling, 2)
         probs[2] = base * (1 - dribbling) * (tackling * (1 - tackling) * 2)
         foul = base * (1 - dribbling) * math.pow(1 - tackling, 2) * (1 - penalty)
-        probs[3] = foul * stamina * (1 - yellow_card - red_card)
-        probs[4] = foul * stamina * yellow_card
-        probs[5] = foul * stamina * red_card
-        probs[6] = foul * (1 - stamina) * (1 - yellow_card - red_card)
-        probs[7] = foul * (1 - stamina) * yellow_card
-        probs[8] = foul * (1 - stamina) * red_card
+        probs[3] = foul * (1 - injury) * (1 - yellow_card - red_card)
+        probs[4] = foul * (1 - injury) * yellow_card
+        probs[5] = foul * (1 - injury) * red_card
+        probs[6] = foul * injury * (1 - yellow_card - red_card)
+        probs[7] = foul * injury * yellow_card
+        probs[8] = foul * injury * red_card
         penalty = base * (1 - dribbling) * math.pow(1 - tackling, 2) * penalty
-        probs[9] = penalty * stamina * (1 - yellow_card - red_card)
-        probs[10] = penalty * stamina * yellow_card
-        probs[11] = penalty * stamina * red_card
-        probs[12] = penalty * (1 - stamina) * (1 - yellow_card - red_card)
-        probs[13] = penalty * (1 - stamina) * yellow_card
-        probs[14] = penalty * (1 - stamina) * red_card
+        probs[9] = penalty * (1 - injury) * (1 - yellow_card - red_card)
+        probs[10] = penalty * (1 - injury) * yellow_card
+        probs[11] = penalty * (1 - injury) * red_card
+        probs[12] = penalty * injury * (1 - yellow_card - red_card)
+        probs[13] = penalty * injury * yellow_card
+        probs[14] = penalty * injury * red_card
 
         prob = self._randomProbs(probs)
         if (prob == 0):
@@ -386,7 +386,7 @@ class Simulator:
         time_update = self._statistics.increaseTime(self._time_step * 2)
 
         # Goalkeeper can get injured
-        if (random.randint(0, int(goalkeeper.getStamina() * 2)) == 0):
+        if (random.randint(0, int(goalkeeper.getStamina() * 6)) == 0):
             time_update += self._statistics.increaseTime(self._time_step * 2)
             self._statistics.execGoalkeeperInjury()
             self._teams[possesion_team].playerInjured(self._statistics, goalkeeper.getIndex())
@@ -629,9 +629,9 @@ class Simulator:
                 visit_stamina = {'stamina' : 100.0}
 
             if local_stamina['stamina'] > visit_stamina['stamina']:
-                visit_max_stamina = visit_stamina['stamina'] / local_stamina['stamina']
+                visit_max_stamina = float(visit_stamina['stamina']) / float(local_stamina['stamina'])
             elif visit_stamina['stamina'] > local_stamina['stamina']:
-                local_max_stamina = local_stamina['stamina'] / visit_stamina['stamina']
+                local_max_stamina = float(local_stamina['stamina']) / float(visit_stamina['stamina'])
 
             del local_stamina
             del visit_stamina
