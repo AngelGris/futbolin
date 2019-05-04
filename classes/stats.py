@@ -96,6 +96,8 @@ class Stats:
         # 32 = Penalty shoot away
         # 33 = Penalty shoot on goal
         # 34 = Freeckick centering
+        # 35 = Goalkeeper gets a yellow card for loosing time
+        # 36 = Substitution for injury
         if self._outputFile == '':
             if self._debugLevel == 3:
                 input(self.getFormattedTime() + ' - ' + description)
